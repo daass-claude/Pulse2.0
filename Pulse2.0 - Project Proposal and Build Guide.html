@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pulse 2.0 — Project Proposal &amp; Build Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --gold: #C9A66B;
+    --gold-light: #E8C98D;
+    --ink: #1F2329;
+    --ink-soft: #4A5058;
+    --body: #2B3038;
+    --muted: #8A8F96;
+    --line: #E5E2DB;
+    --callout-bg: #F5EFE4;
+    --table-head: #1A1F26;
+    --table-row-alt: #FAF8F4;
+    --bg: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #E8E6E1;
+    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    padding: 22mm 22mm 18mm 22mm;
+    background: var(--bg);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    position: relative;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page:last-child { page-break-after: auto; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .header-left { display: flex; align-items: center; gap: 14px; }
+
+  .logo-d {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-weight: 300;
+    font-size: 28px;
+    line-height: 1;
+    position: relative;
+  }
+  .logo-d::before {
+    content: 'THE';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: rotate(-90deg) translateX(50%);
+    transform-origin: left center;
+    font-size: 5px;
+    letter-spacing: 1.5px;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .header-title {
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .header-right {
+    color: var(--ink-soft);
+    font-size: 10px;
+    font-weight: 400;
+  }
+
+  .section-label {
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  h1.cover-title {
+    font-size: 56px;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: 4px;
+    line-height: 1.1;
+    margin: 0 0 18px 0;
+    text-transform: uppercase;
+  }
+
+  h1.section-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 1px;
+    line-height: 1.2;
+    margin: 0 0 22px 0;
+    text-transform: uppercase;
+  }
+
+  h2.intro-heading {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 18px 0;
+  }
+
+  h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 22px 0 10px 0;
+    letter-spacing: 0.2px;
+  }
+
+  h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 16px 0 8px 0;
+  }
+
+  p {
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--body);
+    margin: 0 0 12px 0;
+  }
+
+  ul, ol {
+    margin: 6px 0 14px 0;
+    padding-left: 20px;
+  }
+  li {
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--body);
+    margin-bottom: 4px;
+  }
+
+  .callout {
+    background: var(--callout-bg);
+    border-left: 3px solid var(--gold);
+    padding: 16px 20px;
+    margin: 18px 0;
+  }
+  .callout-label {
+    color: var(--gold);
+    font-size: 9px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .callout-body {
+    font-size: 11px;
+    line-height: 1.65;
+    color: var(--body);
+    font-style: italic;
+    margin: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 18px 0;
+    font-size: 10.5px;
+  }
+  th {
+    background: var(--table-head);
+    color: var(--gold);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 10.5px;
+    letter-spacing: 0.3px;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 10.5px;
+    line-height: 1.55;
+    color: var(--body);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: var(--table-row-alt); }
+  td strong { color: var(--ink); font-weight: 700; }
+
+  .footer {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 2px;
+    font-weight: 400;
+  }
+  .footer-num {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  .footer.cover-footer {
+    border-top: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .cover-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .cover-logo-img {
+    height: 52px;
+    object-fit: contain;
+    object-position: left;
+  }
+  .cover-logo-text {
+    color: var(--gold);
+    font-weight: 300;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: 4px;
+  }
+
+  .cover-eyebrow {
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 30px 0 22px 0;
+  }
+  .cover-subtitle {
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .cover-tagline {
+    color: var(--ink-soft);
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .strong-key { color: var(--ink); font-weight: 700; }
+
+  .header-logo-img {
+    height: 26px;
+    object-fit: contain;
+    object-position: left;
+  }
+
+  @media print {
+    body { background: white; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    @page { size: A4; margin: 0; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--ink);
+    color: var(--gold);
+    border: none;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    z-index: 100;
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .print-btn:hover { background: #000; }
+  @media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<button class="print-btn" id="downloadBtn" onclick="generatePDF()">Download PDF</button>
+
+<script>
+async function generatePDF() {
+  const btn = document.getElementById('downloadBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  btn.style.cursor = 'wait';
+  btn.textContent = 'Preparing...';
+  try {
+    await new Promise(r => setTimeout(r, 500));
+    if (!window.jspdf || !window.html2canvas) throw new Error('PDF libraries failed to load');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    const pages = document.querySelectorAll('.page');
+    for (let i = 0; i < pages.length; i++) {
+      btn.textContent = 'Rendering ' + (i + 1) + ' / ' + pages.length;
+      const canvas = await html2canvas(pages[i], {
+        scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false,
+        windowWidth: pages[i].scrollWidth, windowHeight: pages[i].scrollHeight
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    }
+    btn.textContent = 'Saving...';
+    pdf.save('pulse-2.0-proposal.pdf');
+    btn.textContent = 'Downloaded';
+    setTimeout(() => { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }, 2500);
+  } catch (e) {
+    console.error('PDF generation failed:', e);
+    btn.textContent = 'Failed — use Ctrl+P to print';
+    setTimeout(() => { btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }, 4000);
+  }
+}
+</script>
+
+<!-- ============ COVER ============ -->
+<div class="page">
+  <div class="cover-logo">
+    <img id="cover-logo-img" class="cover-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'; document.getElementById('cover-logo-text').style.display='block';" />
+    <span id="cover-logo-text" class="cover-logo-text" style="display:none;">DAASS</span>
+  </div>
+
+  <div class="cover-eyebrow">Project Proposal &amp; Build Guide</div>
+  <h1 class="cover-title">Pulse 2.0</h1>
+  <p class="cover-subtitle">Internal Reference Document</p>
+  <p class="cover-tagline">Architecture · Methodology · Roadmap</p>
+
+  <div class="footer cover-footer">
+    <span>DAASS · The Real Estate Academy</span>
+    <span>v1.0 — 2025</span>
+  </div>
+</div>
+
+<!-- ============ INTRODUCTION ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <h2 class="intro-heading">Introduction</h2>
+
+  <p>Pulse 2.0 is the internal work execution platform for DAASS, rebuilt from the ground up as a fully custom-coded application. This document covers the complete architecture, the reasoning behind key technical decisions, the development and deployment methodology, and the roadmap for expanding the platform to future DAASS projects.</p>
+
+  <p>This guide is intended for internal use by the operations team and any developer maintaining or extending the system. It assumes basic familiarity with the platform but no prior knowledge of the codebase.</p>
+
+  <div class="callout">
+    <div class="callout-label">How to use this guide</div>
+    <p class="callout-body">Work through each section in order on your first read. After that, use it as a reference; each section is self-contained and labeled for quick navigation.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">02</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 01 — PROJECT OVERVIEW ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 01</div>
+  <h1 class="section-title">Project Overview</h1>
+
+  <p>Pulse 2.0 is a role-based internal operations tool built for the DAASS team. It replaces the original AI-generated Lovable version, which suffered from data loss, limited customisability, and a fragmented admin experience. The new build provides persistent cloud-synced data, real-time team visibility, and a unified admin interface for EODs, payroll, and archive management.</p>
+
+  <h3>Core Features</h3>
+  <p>The platform is structured around five key areas:</p>
+
+  <p><strong class="strong-key">Dashboard.</strong> Real-time task tracker, Loom recording link, quick-start task shortcuts, and the Start of Day (SOD) modal on every login.</p>
+  <p><strong class="strong-key">Team.</strong> Live status board showing each team member's current activity (Working, Lunch, Offline) and active task, sourced from Supabase in real time.</p>
+  <p><strong class="strong-key">EODs / Payroll.</strong> Admin-only view of all submitted End of Day reports, including tasks, hours, and Loom recording links.</p>
+  <p><strong class="strong-key">Archive Files.</strong> Admin-only per-employee archive with EOD and Payroll sub-tabs.</p>
+  <p><strong class="strong-key">Profile.</strong> Displays the user's SOD priorities and gratitude entry for the day (read-only).</p>
+
+  <h3>Key Improvements Over Original Pulse</h3>
+  <table>
+    <thead><tr><th style="width:25%;">Area</th><th>Improvement</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Database</strong></td><td>Supabase PostgreSQL replaces localStorage-only storage. Data is now persistent and accessible across all devices and sessions.</td></tr>
+      <tr><td><strong>UI / UX</strong></td><td>Fully custom dark-gold design system with consistent typography, spacing, and component styling throughout.</td></tr>
+      <tr><td><strong>EOD Archive</strong></td><td>EODs and payroll are auto-archived per employee in the Archive tab; no manual filing required.</td></tr>
+      <tr><td><strong>Admin View</strong></td><td>Loom recordings, EOD task lists, and payroll are displayed together in one tab; eliminates switching between tools.</td></tr>
+      <tr><td><strong>Workflow</strong></td><td>SOD modal appears on every login, real-time team status, and quick-start task shortcuts for recurring work.</td></tr>
+      <tr><td><strong>Access Control</strong></td><td>Role-based routing: admins access all tabs; employees see only Dashboard, Team, and Profile.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">03</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 02 — COMPARATIVE ANALYSIS ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 02</div>
+  <h1 class="section-title">Lovable vs. Custom Build</h1>
+
+  <p>The original Pulse was generated entirely through Lovable, an AI no-code builder. While fast to prototype, Lovable-generated applications have significant structural limitations that become blockers at production scale. Pulse 2.0 was rebuilt as a standard React/TypeScript application to resolve these constraints permanently.</p>
+
+  <table>
+    <thead>
+      <tr><th style="width:22%;">Factor</th><th style="width:39%;">Original Pulse (Lovable)</th><th>Pulse 2.0 (Custom)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Code Ownership</strong></td><td>AI-generated; difficult to read or modify reliably</td><td>Full ownership; standard TypeScript anyone can maintain</td></tr>
+      <tr><td><strong>Data Persistence</strong></td><td>localStorage only; data lost on browser clear or new device</td><td>Supabase PostgreSQL; persistent, cloud-synced</td></tr>
+      <tr><td><strong>Customisation</strong></td><td>Constrained by Lovable's generation model</td><td>Unlimited; any feature can be built</td></tr>
+      <tr><td><strong>Role-Based Access</strong></td><td>Basic or absent</td><td>Admin / Employee routing with route-level protection</td></tr>
+      <tr><td><strong>Real-Time Features</strong></td><td>None</td><td>Supabase Realtime subscription on team status</td></tr>
+      <tr><td><strong>UI Consistency</strong></td><td>Inconsistent; regeneration changes styling unpredictably</td><td>Custom design tokens, consistent across all pages</td></tr>
+      <tr><td><strong>Tooling Cost</strong></td><td>Lovable subscription required</td><td>Zero tooling cost; all open-source</td></tr>
+      <tr><td><strong>Scalability</strong></td><td>Very limited; adding features risks breaking existing code</td><td>Standard component architecture; fully scalable</td></tr>
+      <tr><td><strong>Debugging</strong></td><td>Generated code is opaque; hard to trace bugs</td><td>Standard React dev tools; TypeScript errors caught at build</td></tr>
+      <tr><td><strong>Deployment</strong></td><td>Lovable-hosted; no control over environment</td><td>Any host: Vercel, Netlify, Railway, Cloudflare Pages</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Key Decision</div>
+    <p class="callout-body">The switch from Lovable to a custom build was not a preference; it was a technical necessity. LocalStorage-only storage meant every team member effectively had a separate, private database. Admin visibility over EODs required persistent server-side storage.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">04</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 03 — TECHNICAL STACK ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 03</div>
+  <h1 class="section-title">Technical Stack &amp; Cost</h1>
+
+  <p>Pulse 2.0 uses a modern, lightweight open-source stack. Every tool has a generous free tier and a large developer community, meaning support is readily available and there is no vendor lock-in.</p>
+
+  <h3>Frontend</h3>
+  <ul>
+    <li><strong>React 18.</strong> UI component library; industry standard for web applications.</li>
+    <li><strong>TypeScript.</strong> Typed JavaScript; catches errors at build time before they reach users.</li>
+    <li><strong>Vite 6.</strong> Fast build tool and development server.</li>
+    <li><strong>React Router DOM v6.</strong> Client-side routing with role-based route protection.</li>
+    <li><strong>Lucide React.</strong> SVG icon library; tree-shakeable, no performance cost.</li>
+    <li><strong>Custom CSS variables.</strong> No UI framework dependency; keeps the bundle small and styling fully controlled.</li>
+  </ul>
+
+  <h3>Backend / Database (Supabase)</h3>
+  <p>Supabase is an open-source Firebase alternative built on PostgreSQL. It provides a full database, real-time subscriptions, and a REST API out of the box. No backend server code is required.</p>
+
+  <table>
+    <thead><tr><th style="width:30%;">Table</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>eod_entries</strong></td><td>All submitted End of Day reports; tasks, hours, login/logout times, Loom links</td></tr>
+      <tr><td><strong>live_status</strong></td><td>One row per employee; upserted in real time to power the Team page status board</td></tr>
+      <tr><td><strong>sod_entries</strong></td><td>Start of Day submissions; priorities, expected outcomes, gratitude, quote</td></tr>
+      <tr><td><strong>daily_tasks</strong></td><td>Current session's active task list per employee (backup/sync)</td></tr>
+      <tr><td><strong>routine_tasks</strong></td><td>Per-user saved quick-start task shortcuts</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">05</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 03 cont — AUTH + COSTS ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 03 · continued</div>
+  <h1 class="section-title">Authentication &amp; Costs</h1>
+
+  <h3>Authentication</h3>
+  <ul>
+    <li>Hardcoded USERS array in AuthContext; no external auth server required for current team size.</li>
+    <li>localStorage session persistence; survives page refresh, cleared on sign-out.</li>
+    <li>Session re-validated on load against USERS array; role changes take effect immediately without re-login.</li>
+    <li>Role-based routing: AdminRoute guard redirects employees away from admin pages at the router level.</li>
+  </ul>
+
+  <h3>Development Environment</h3>
+  <ul>
+    <li>Node.js 18+ with npm</li>
+    <li>Claude Code (AI-assisted development CLI)</li>
+    <li>VS Code with TypeScript and React extensions</li>
+    <li>.env file for environment variables (never committed to Git)</li>
+  </ul>
+
+  <h3>Cost Implications</h3>
+  <table>
+    <thead>
+      <tr><th style="width:20%;">Service</th><th style="width:32%;">Free Tier</th><th style="width:18%;">Paid Tier</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Supabase</strong></td><td>500MB DB, 50k MAU, 2GB storage, Realtime included</td><td>$25/mo Pro</td><td>Free tier sufficient for current team</td></tr>
+      <tr><td><strong>Vercel</strong></td><td>Unlimited deployments, custom domain, HTTPS</td><td>$20/mo Pro</td><td>Recommended; zero-config GitHub integration</td></tr>
+      <tr><td><strong>Netlify</strong></td><td>Unlimited deploys, form handling, HTTPS</td><td>$19/mo Pro</td><td>Alternative to Vercel</td></tr>
+      <tr><td><strong>Railway</strong></td><td>$5/mo Hobby plan</td><td>$20/mo Pro</td><td>Better for server-side workloads</td></tr>
+      <tr><td><strong>Cloudflare Pages</strong></td><td>Unlimited deployments, global CDN, HTTPS</td><td>$20/mo Pro</td><td>Fastest globally; competitive free tier</td></tr>
+      <tr><td><strong>Custom Domain</strong></td><td>—</td><td>~$12/year</td><td>Optional; platform subdomains work fine</td></tr>
+      <tr><td><strong>GitHub</strong></td><td>Unlimited private repos</td><td>$4/mo Team</td><td>Free tier sufficient</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Cost Summary</div>
+    <p class="callout-body">Total estimated monthly operating cost: $0 on free tiers. A paid hosting plan is only required if the team needs advanced features. Supabase free tier supports the full current team indefinitely.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">06</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 04 — DEV & DEPLOYMENT ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 04</div>
+  <h1 class="section-title">Development &amp; Deployment</h1>
+
+  <p>Pulse 2.0 is built and maintained using a three-stage pipeline: local development with Claude Code, version control via GitHub, and continuous deployment through a hosting platform. This process keeps all changes tracked, reversible, and live within minutes of being approved.</p>
+
+  <h3>Step 1 — Local Development (Claude Code + VS Code)</h3>
+  <p>All code is written and tested locally. Claude Code, Anthropic's AI development CLI, is used as the primary coding assistant, enabling rapid feature implementation with immediate TypeScript feedback.</p>
+  <ul>
+    <li>Run <strong>npm run dev</strong> to launch the local development server at localhost:5173</li>
+    <li>All changes are tested in the browser before committing</li>
+    <li>Run <strong>npm run build</strong> to verify the TypeScript compilation passes before any push</li>
+    <li>Environment variables are stored in a local <strong>.env</strong> file (not committed to Git)</li>
+  </ul>
+
+  <h3>Step 2 — Version Control (GitHub)</h3>
+  <p>All source code lives in a private GitHub repository. Every change is committed with a descriptive message, creating a complete audit trail of the project's evolution.</p>
+  <ul>
+    <li>Repository: private, owned by DAASS organisation account</li>
+    <li>Branch strategy: main = production-ready code; feature branches for new work</li>
+    <li>The <strong>.env</strong> file is listed in <strong>.gitignore</strong>; credentials never enter the repository</li>
+    <li>Supabase SQL setup script (<strong>supabase_setup.sql</strong>) is committed for reproducibility</li>
+  </ul>
+
+  <h3>Step 3 — Deployment (Hosting Platform — TBA)</h3>
+  <p>The hosting platform is connected to the GitHub repository. Every push to the main branch triggers an automatic rebuild; the live application updates within approximately 60–90 seconds.</p>
+  <ul>
+    <li>Environment variables set in the hosting platform dashboard (not in code)</li>
+    <li>No server management required; the application is a static React SPA</li>
+    <li>HTTPS provided automatically by all candidate platforms</li>
+    <li>Custom domain can be connected at any point with a DNS record change</li>
+  </ul>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">07</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 04 cont — HOSTING ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 04 · continued</div>
+  <h1 class="section-title">Hosting Candidates</h1>
+
+  <p>The final hosting platform has not yet been selected. All candidates below support the same GitHub-connected, auto-deploy workflow.</p>
+
+  <table>
+    <thead>
+      <tr><th style="width:22%;">Platform</th><th style="width:48%;">Strengths</th><th>Best For</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Vercel</strong></td><td>Zero-config GitHub integration, preview deployments, strong React/Vite support</td><td>First choice for React SPAs</td></tr>
+      <tr><td><strong>Netlify</strong></td><td>Form handling, split testing, mature platform</td><td>Alternative if Vercel has limitations</td></tr>
+      <tr><td><strong>Cloudflare Pages</strong></td><td>Global CDN, fastest load times, very generous free tier</td><td>Performance-critical or global teams</td></tr>
+      <tr><td><strong>Railway</strong></td><td>Full server support if backend is added later</td><td>Future-proofing for API layers</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Deployment Pipeline Summary</div>
+    <p class="callout-body">Claude Code (local dev) → npm run build (verify) → git push to GitHub → Auto-deploy to hosting platform → Live in ~90 seconds</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">08</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 05 — ROADMAP ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 05</div>
+  <h1 class="section-title">Future Roadmap &amp; Scalability</h1>
+
+  <p>Pulse 2.0 was architected with intentional simplicity so that it can grow without requiring a full rebuild. The stack — React, TypeScript, Vite, Supabase — is the same stack used by large production applications, meaning there is no ceiling on what can be built.</p>
+
+  <h3>Near-Term (Next 1–3 Months)</h3>
+  <ul>
+    <li>GitHub repository setup and first production deployment to selected hosting platform</li>
+    <li>Supabase production environment configuration and table creation via <strong>supabase_setup.sql</strong></li>
+    <li>Custom domain configuration (if applicable)</li>
+    <li>Team onboarding and password distribution</li>
+  </ul>
+
+  <h3>Medium-Term (3–6 Months)</h3>
+  <ul>
+    <li>Payroll calculation module; automated hour totals and pay summaries from EOD data <em>(detailed in Section 06)</em></li>
+    <li>Email notifications; alert admins when an EOD is submitted</li>
+    <li>Admin analytics dashboard; weekly/monthly hours worked, task category breakdowns</li>
+    <li>Mobile-responsive layout; core pages optimised for phone and tablet use</li>
+    <li>Audit log; track who changed what and when</li>
+  </ul>
+
+  <h3>Platform Reuse for Future DAASS Applications</h3>
+  <p>The Pulse 2.0 codebase is designed to be a reusable foundation. The design system, layout structure, authentication pattern, Supabase integration layer, and deployment pipeline are all generic enough to be adapted for other DAASS web applications with minimal configuration. Each new project would require:</p>
+  <ul>
+    <li>A new Supabase project (free under the same account)</li>
+    <li>A new private GitHub repository (free)</li>
+    <li>A new hosting deployment (free on all candidate platforms)</li>
+    <li>Application-specific pages and database tables layered on top of the shared base</li>
+  </ul>
+
+  <div class="callout">
+    <div class="callout-label">Platform Reuse Note</div>
+    <p class="callout-body">Any future DAASS web application — internal tools, client portals, academy platforms — can be bootstrapped from the Pulse 2.0 codebase within hours rather than weeks. The foundation is already built, tested, and deployed.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">09</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 06 — EOD & PAYROLL OVERVIEW ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 06</div>
+  <h1 class="section-title">EOD Reporting &amp; Automated Payroll</h1>
+
+  <p>Pulse already does the hard part: tracking what everyone worked on and for how long. This section closes the loop by saving that data properly, rolling it up into weekly payroll totals, and giving admins a clean one-click export. No more manual math, no more digging through EOD emails.</p>
+
+  <h3>What Pulse Already Does Well</h3>
+  <p><strong class="strong-key">Task-level time tracking.</strong> Employees log tasks with start/stop precision. Subtasks, notes, and links are all captured.</p>
+  <p><strong class="strong-key">Session vs. task time distinction.</strong> Pulse correctly separates total session time from actual task time, and we pay for task time only.</p>
+  <p><strong class="strong-key">EOD modal.</strong> The Submit &amp; End Day flow already surfaces the right data: tasks completed, durations, open items, Loom links, and notes.</p>
+  <p><strong class="strong-key">Admin visibility.</strong> Live status views and per-user history exist. The data is there.</p>
+
+  <h3>The Gap This Section Closes</h3>
+  <table>
+    <thead><tr><th style="width:35%;">Issue</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td><strong>EOD data doesn't persist</strong></td><td>The modal collects everything correctly but doesn't save daily task totals in a structured, payroll-ready format.</td></tr>
+      <tr><td><strong>No weekly rollup</strong></td><td>There is no accumulation of daily totals across the work week. Calculating weekly hours requires manual effort.</td></tr>
+      <tr><td><strong>EOD emails are unthreaded</strong></td><td>Admin email reports are sent as individual messages. A single ongoing thread per employee is needed.</td></tr>
+      <tr><td><strong>Payroll is manual</strong></td><td>Without structured totals, someone has to manually calculate hours and cross-reference rates.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">10</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 06 — PHASE 01 ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 06 · Phase 01</div>
+  <h1 class="section-title">EOD Reporting, Fixed</h1>
+
+  <p>The EOD modal already shows the right data. Phase 01 makes it count by persisting that data, threading the admin email, and structuring every send for fast review.</p>
+
+  <h3>Save to Database on Submit</h3>
+  <p>When an employee clicks <strong class="strong-key">Submit &amp; End Day</strong>, Pulse saves a structured daily record: employee, date, total billable task time, individual task breakdown, open items, notes, and Loom link. This record becomes the single source of truth for that employee's day.</p>
+
+  <h3>Threaded EOD Emails</h3>
+  <p>Each employee has one persistent email thread. Every EOD report is sent as a reply to that thread, so the admin inbox shows a single ongoing conversation per person — Monday, Tuesday, Wednesday building on each other like a log. Technically, this works by storing each employee's thread ID after the first email and using email reply headers (<strong class="strong-key">In-Reply-To</strong>) for every subsequent send.</p>
+
+  <h3>Structured Email Format</h3>
+  <p>Each threaded EOD email includes:</p>
+  <ul>
+    <li>Date and total billable task time for the day</li>
+    <li>Task-by-task breakdown with durations</li>
+    <li>What's still open</li>
+    <li>Notes and Loom link if provided</li>
+  </ul>
+
+  <div class="callout">
+    <div class="callout-label">Phase 01 Outcome</div>
+    <p class="callout-body">Phase 01 alone delivers immediate value. Threaded emails replace inbox clutter, and persistent records become available for any future analysis, even before payroll logic is wired up in later phases.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">11</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 06 — PHASE 02 ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 06 · Phase 02</div>
+  <h1 class="section-title">Daily Task-Time Persistence</h1>
+
+  <p>Phase 01 saves the EOD record. Phase 02 makes those records queryable for payroll, with per-employee work-week awareness so the rollup respects each person's actual schedule.</p>
+
+  <h3>Daily Totals Stored Per Employee</h3>
+  <p>Each saved EOD record includes a clean <strong class="strong-key">billable_minutes</strong> field — the sum of all task durations for that day, excluding session time, lunch, and idle time. This is the number payroll is calculated from.</p>
+
+  <h3>Configurable Work Week Per Employee</h3>
+  <p>Not everyone works the same days. Each employee's profile includes a work-week configuration — for example, one team member works Sunday through Thursday instead of Monday through Friday. The weekly rollup respects each person's schedule individually.</p>
+
+  <table>
+    <thead><tr><th style="width:30%;">Field</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>billable_minutes</strong></td><td>Sum of task durations excluding session time, lunch, and idle time</td></tr>
+      <tr><td><strong>work_week_start</strong></td><td>First working day for that employee (e.g. Sunday or Monday)</td></tr>
+      <tr><td><strong>work_week_days</strong></td><td>Array of working days for that employee</td></tr>
+      <tr><td><strong>employee_id</strong></td><td>Foreign key linking to the existing user record</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">12</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 06 — PHASE 03 ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 06 · Phase 03</div>
+  <h1 class="section-title">Weekly Payroll Rollup</h1>
+
+  <p>At the end of each work week, Pulse calculates each employee's total billable hours and what they're owed. The rollup runs automatically against the persisted daily totals from Phase 02.</p>
+
+  <h3>Weekly Accumulation</h3>
+  <p>Daily billable totals accumulate automatically across the configured work week. No manual addition. The weekly total is always current and visible to admins.</p>
+
+  <h3>Per-Employee Hourly Rates</h3>
+  <p>Each employee has a private hourly rate stored in admin settings. Rates are never visible to the employee, only to admins. Every minute is counted: 3 hours 31 minutes is paid as 3.52 hours, not rounded down.</p>
+
+  <h3>Calculated Weekly Pay</h3>
+  <p>Weekly hours × hourly rate = amount owed. Calculated automatically, visible in the admin panel.</p>
+
+  <div class="callout">
+    <div class="callout-label">Privacy Principle</div>
+    <p class="callout-body">Hourly rates live exclusively in admin-only settings. No employee can access, infer, or view another person's rate or pay. Phase 03 introduces the rate field but inherits the existing role-based access controls established in Section 01.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">13</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 06 — PHASE 04 ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 06 · Phase 04</div>
+  <h1 class="section-title">One-Click Payroll Export</h1>
+
+  <p>A single button in the Pulse admin panel exports the current week's payroll summary as a spreadsheet, opening directly in Google Sheets or Excel with no reformatting needed.</p>
+
+  <h3>Export Contents</h3>
+  <table>
+    <thead><tr><th style="width:30%;">Column</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Employee name</strong></td><td>Full name as stored in profile</td></tr>
+      <tr><td><strong>Week of</strong></td><td>Date range covering the configured work week</td></tr>
+      <tr><td><strong>Days worked</strong></td><td>Count of days with submitted EOD records</td></tr>
+      <tr><td><strong>Total billable hours</strong></td><td>Precise decimal hours, not rounded</td></tr>
+      <tr><td><strong>Hourly rate</strong></td><td>From admin settings (admin view only)</td></tr>
+      <tr><td><strong>Amount owed</strong></td><td>Hours × rate (admin view only)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Access &amp; Privacy</h3>
+  <ul>
+    <li><strong>Rates are invisible to employees.</strong> Hourly rates live in admin-only settings.</li>
+    <li><strong>Export is admin-gated.</strong> The payroll export button only appears for admin-role users.</li>
+    <li><strong>EOD data is per-user.</strong> Employees can only see their own history.</li>
+    <li><strong>No new surveillance.</strong> This adds payroll logic on top of existing task data; no screenshots, idle detection, or monitoring beyond what Pulse already captures.</li>
+  </ul>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">14</span>
+  </div>
+</div>
+
+<!-- ============ SECTION 06 — IMPLEMENTATION ORDER ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <div class="section-label">Section 06 · Implementation</div>
+  <h1 class="section-title">Order &amp; Dependencies</h1>
+
+  <p>Each phase is independently shippable and testable. The order below preserves dependencies; later phases assume earlier phases are in place. Phase 01 alone delivers immediate operational value before any payroll logic is wired up.</p>
+
+  <table>
+    <thead>
+      <tr><th style="width:18%;">Phase</th><th style="width:35%;">Depends On</th><th>Estimated Scope</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Phase 01</strong></td><td>Existing EOD modal, Supabase eod_entries table</td><td>Schema additions and email threading logic via In-Reply-To headers</td></tr>
+      <tr><td><strong>Phase 02</strong></td><td>Phase 01 complete</td><td>billable_minutes field and per-user work-week configuration</td></tr>
+      <tr><td><strong>Phase 03</strong></td><td>Phase 02 complete</td><td>Admin settings UI for rates and weekly rollup query</td></tr>
+      <tr><td><strong>Phase 04</strong></td><td>Phase 03 complete</td><td>Admin panel export button and spreadsheet generation</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Key Decision</div>
+    <p class="callout-body">Section 06 is a pure additive layer on top of the existing Pulse 2.0 architecture. No schema migrations break existing data, no new third-party services are introduced, and no employee-facing surface area changes. The work fits within the medium-term roadmap budget already approved in Section 05.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">15</span>
+  </div>
+</div>
+
+<!-- ============ CONCLUSION ============ -->
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <img class="header-logo-img" src="public/daass-logo.png" alt="DAASS" onerror="this.style.display='none'" />
+      <div class="header-title">Pulse 2.0 — Project Proposal &amp; Build Guide</div>
+    </div>
+    <div class="header-right">The Real Estate Academy</div>
+  </div>
+
+  <h2 class="intro-heading">Conclusion</h2>
+
+  <p>Pulse 2.0 represents a meaningful step forward in how the DAASS team tracks, coordinates, and documents its work. By moving from a Lovable-generated prototype to a purpose-built application, the team now has a platform it fully owns — one that can be changed, extended, and scaled without constraints. The database is persistent, the UI is consistent, and the admin workflow is significantly faster than before.</p>
+
+  <p>The methodology established here — Claude Code for development, GitHub for version control, and a CI/CD-connected hosting platform — is repeatable for every future DAASS web project. The tooling cost is effectively zero, and the process from idea to deployed feature is measured in hours, not weeks. Section 06 demonstrates how new operational capability can be layered on top of the existing foundation without rebuilding any of it.</p>
+
+  <h3>Key Takeaways</h3>
+  <ol>
+    <li>The full codebase is owned by DAASS and can be modified or extended freely at any time.</li>
+    <li>Supabase ensures all data is persistent and visible across every device and session.</li>
+    <li>The GitHub → hosting pipeline means updates are live within 90 seconds of approval.</li>
+    <li>The same stack can serve as the foundation for every future DAASS web application.</li>
+    <li>Current monthly operating cost is $0 on free tiers across all services.</li>
+    <li>The EOD &amp; Payroll workflow specified in Section 06 closes the operational loop with no new tooling cost.</li>
+  </ol>
+
+  <div class="callout">
+    <div class="callout-label">Final Note</div>
+    <p class="callout-body">The best internal tool is one the team actually uses. Pulse 2.0 was built around how the team already works, not the other way around.</p>
+  </div>
+
+  <div class="footer">
+    <span>The Real Estate Academy</span>
+    <span class="footer-num">16</span>
+  </div>
+</div>
+
+</body>
+</html>
