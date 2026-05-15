@@ -10,9 +10,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType>({ theme: 'dark', toggleTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() =>
-    (localStorage.getItem('pulse2_theme') as Theme) || 'dark'
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = (localStorage.getItem('pulse2_theme') as Theme) || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    return saved;
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
