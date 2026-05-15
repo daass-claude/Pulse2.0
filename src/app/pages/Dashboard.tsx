@@ -4,15 +4,8 @@ import { useAuth } from '../auth/AuthContext';
 import { useEOD, type Task } from '../contexts/EODContext';
 import { SODModal } from '../components/SODModal';
 import { FinalizeEODModal } from '../components/FinalizeEODModal';
-import { getDailyDateKey } from '../lib/gratitudePrompts';
+import { formatTime } from '../lib/time';
 import { supabase } from '../../lib/supabase';
-
-function formatTime(s: number) {
-  const h   = Math.floor(s / 3600).toString().padStart(2, '0');
-  const m   = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-  const sec = (s % 60).toString().padStart(2, '0');
-  return `${h}:${m}:${sec}`;
-}
 
 function nowTimeStr(): string {
   return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });

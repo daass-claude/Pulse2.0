@@ -1,6 +1,9 @@
 import * as XLSX from 'xlsx';
 import type { EODEntry, EmployeeEOD } from '../app/contexts/EODContext';
 
+const EOD_HEADER = ['Prio level', 'Task Status', 'Specific Task', 'Related Links', 'Time', 'Notes/ Challenges/ etc.'];
+const EOD_HINTS  = ['',           '',             '',               'or N/A',        'h/m',  'Jargons'];
+
 function fmtTime(s: number): string {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
@@ -15,10 +18,6 @@ function download(wb: XLSX.WorkBook, filename: string) {
 }
 
 export function exportEODEntry(entry: EODEntry, employeeName: string) {
-  // Header rows matching the required format
-  const header = ['Prio level', 'Task Status', 'Specific Task', 'Related Links', 'Time', 'Notes/ Challenges/ etc.'];
-  const hints  = ['',           '',             '',               'or N/A',        'h/m',  'Jargons'];
-
   const dataRows = entry.tasks.map(t => [
     t.priority || '',
     t.status,
@@ -28,7 +27,7 @@ export function exportEODEntry(entry: EODEntry, employeeName: string) {
     t.notes || '',
   ]);
 
-  const wsData = [header, hints, ...dataRows];
+  const wsData = [EOD_HEADER, EOD_HINTS, ...dataRows];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
 
   // Column widths
@@ -67,8 +66,6 @@ export function exportPayrollWeek(weekLabel: string, entries: EODEntry[], employ
 
 export function exportAllEODs(eod: EmployeeEOD) {
   const wb = XLSX.utils.book_new();
-  const header = ['Prio level', 'Task Status', 'Specific Task', 'Related Links', 'Time', 'Notes/ Challenges/ etc.'];
-  const hints  = ['',           '',             '',               'or N/A',        'h/m',  'Jargons'];
 
   // Sort newest-first so the first sheet is the most recent day
   const sorted = [...eod.entries].sort((a, b) => {
@@ -87,7 +84,7 @@ export function exportAllEODs(eod: EmployeeEOD) {
       fmtTime(t.elapsedTime),
       t.notes || '',
     ]);
-    const ws = XLSX.utils.aoa_to_sheet([header, hints, ...dataRows]);
+    const ws = XLSX.utils.aoa_to_sheet([EOD_HEADER, EOD_HINTS, ...dataRows]);
     ws['!cols'] = [{ wch: 14 }, { wch: 13 }, { wch: 32 }, { wch: 20 }, { wch: 8 }, { wch: 36 }];
     // Excel sheet names max 31 chars; strip commas
     const sheetName = entry.date.replace(/,\s*/g, ' ').slice(0, 31);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useEOD, type EmployeeEOD } from '../contexts/EODContext';
 import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { ChevronDown, ChevronUp, Download, FileText, Video, Clock } from 'lucide-react';
@@ -152,8 +152,8 @@ function WeekBlockEOD({ weekKey, entries, employeeName, defaultOpen }: { weekKey
 }
 
 function EODTab({ eod }: { eod: EmployeeEOD }) {
-  const weekMap = groupByWeek(eod.entries);
-  const sortedKeys = [...weekMap.keys()].sort((a, b) => b.localeCompare(a));
+  const weekMap = useMemo(() => groupByWeek(eod.entries), [eod.entries]);
+  const sortedKeys = useMemo(() => [...weekMap.keys()].sort((a, b) => b.localeCompare(a)), [weekMap]);
 
   if (eod.entries.length === 0) {
     return (
@@ -255,8 +255,8 @@ function WeekBlockPayroll({ weekKey, entries, employeeName, defaultOpen }: { wee
 }
 
 function PayrollTab({ eod }: { eod: EmployeeEOD }) {
-  const weekMap = groupByWeek(eod.entries);
-  const sortedKeys = [...weekMap.keys()].sort((a, b) => b.localeCompare(a));
+  const weekMap = useMemo(() => groupByWeek(eod.entries), [eod.entries]);
+  const sortedKeys = useMemo(() => [...weekMap.keys()].sort((a, b) => b.localeCompare(a)), [weekMap]);
   const grandTotal = calcWeekHours(eod.entries);
 
   if (eod.entries.length === 0) {

@@ -24,11 +24,6 @@ export const GRATITUDE_PROMPTS = [
   "The Simple Joy: What is the smallest thing that happened recently that brought you genuine happiness?",
 ];
 
-const QUOTE_ROTATION_EMAILS = [
-  'arielle@pulse.app', 'judy@pulse.app', 'sandra@pulse.app',
-  'gian@pulse.app',    'aldrich@pulse.app', 'julia@pulse.app', 'richard@pulse.app',
-];
-
 function utcDayOfYear(): number {
   const now = new Date();
   const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
@@ -44,14 +39,3 @@ export function getDailyDateKey(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-export function isQuoteTurn(email: string): boolean {
-  const idx = utcDayOfYear() % QUOTE_ROTATION_EMAILS.length;
-  return QUOTE_ROTATION_EMAILS[idx].toLowerCase() === email.toLowerCase();
-}
-
-export function getQuoteTurnName(): string {
-  const idx = utcDayOfYear() % QUOTE_ROTATION_EMAILS.length;
-  const email = QUOTE_ROTATION_EMAILS[idx];
-  const name = email.split('@')[0];
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}

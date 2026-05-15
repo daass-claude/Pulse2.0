@@ -29,7 +29,7 @@ export function Profile() {
   const todayKey        = getDailyDateKey();
 
   const picKey = `pulse2_pic_${user?.email}`;
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem(`pulse2_pic_${user?.email}`) || '');
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem(picKey) || '');
 
   const [oldPw, setOldPw]         = useState('');
   const [newPw, setNewPw]         = useState('');

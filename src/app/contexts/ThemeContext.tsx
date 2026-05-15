@@ -19,10 +19,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('pulse2_theme', theme);
   }, [theme]);
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, []);
-
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));
 
   return (

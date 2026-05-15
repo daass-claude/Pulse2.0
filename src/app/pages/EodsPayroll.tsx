@@ -4,6 +4,7 @@ import { useEOD, type EmployeeEOD } from '../contexts/EODContext';
 import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { ExternalLink, Download, ClipboardList, Video, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { exportEODEntry, exportPayrollAll } from '../../lib/exportXlsx';
+import { formatTime } from '../lib/time';
 
 function parseLoomEmbed(url: string): string | null {
   if (!url?.trim()) return null;
@@ -14,13 +15,6 @@ function parseLoomEmbed(url: string): string | null {
     if (!id || id.length < 10) return null;
     return `https://www.loom.com/embed/${id}`;
   } catch { return null; }
-}
-
-function formatTime(s: number) {
-  const h   = Math.floor(s / 3600).toString().padStart(2, '0');
-  const m   = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-  const sec = (s % 60).toString().padStart(2, '0');
-  return `${h}:${m}:${sec}`;
 }
 
 function LoomPlayer({ url }: { url: string }) {

@@ -18,13 +18,13 @@ function formatDecimalHours(h: number): string {
 }
 
 function parseEntryDate(dateStr: string): Date {
-  // dateStr may be like "Mon, May 12" — try to coerce it
-  try { return new Date(dateStr + ' 2025'); } catch { return new Date(0); }
+  try { return new Date(dateStr + ' ' + new Date().getFullYear()); } catch { return new Date(0); }
 }
 
 // ── Custom Tooltip ─────────────────────────────────────────
 
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipPayload { value: number }
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
@@ -95,14 +95,12 @@ export function Analytics() {
 
     for (const emp of employeeEODs) {
       let empHours = 0;
-      let empDays  = 0;
 
       for (const entry of emp.entries) {
         const h = hhmmToHours(entry.totalHours);
         empHours          += h;
         totalHoursDecimal += h;
         totalDaysWorked   += 1;
-        empDays           += 1;
         totalTasksDone    += entry.tasks.filter(t => t.status === 'Done').length;
       }
 

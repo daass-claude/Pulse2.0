@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { User as UserIcon, Quote } from 'lucide-react';
 import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -160,7 +160,10 @@ export function Team() {
     offline: TEAM_MEMBERS.filter(m => getStatus(m.email) === 'Offline').length,
   };
 
-  const filtered = filter === 'All' ? TEAM_MEMBERS : TEAM_MEMBERS.filter(m => getStatus(m.email) === filter);
+  const filtered = useMemo(
+    () => filter === 'All' ? TEAM_MEMBERS : TEAM_MEMBERS.filter(m => getStatus(m.email) === filter),
+    [filter, liveData] // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   return (
     <div style={{

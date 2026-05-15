@@ -34,7 +34,7 @@ export function Layout() {
   const pageTitle  = PAGE_TITLES[location.pathname] ?? '';
 
   const picKey = user?.email ? `pulse2_pic_${user.email}` : 'pulse2_pic';
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem(user?.email ? `pulse2_pic_${user.email}` : 'pulse2_pic') || '');
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem(picKey) || '');
   const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dbOk, setDbOk] = useState<boolean | null>(null);
