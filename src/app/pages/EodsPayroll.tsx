@@ -50,8 +50,8 @@ function LoomPlayer({ url }: { url: string }) {
   );
 }
 
-function EntryCard({ entry, employeeName }: { entry: EmployeeEOD['entries'][0]; employeeName: string }) {
-  const [open, setOpen] = useState(false);
+function EntryCard({ entry, employeeName, defaultOpen = false }: { entry: EmployeeEOD['entries'][0]; employeeName: string; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <div className="glass-card" style={{ borderRadius: '12px', overflow: 'hidden' }}>
@@ -286,7 +286,7 @@ export function EodsPayroll() {
           ) : (
             <>
               {[...currentEOD.entries].reverse().map((entry, i) => (
-                <EntryCard key={i} entry={entry} employeeName={selected} />
+                <EntryCard key={i} entry={entry} employeeName={selected} defaultOpen={i === 0} />
               ))}
               <PayrollSummary eod={currentEOD} />
             </>
