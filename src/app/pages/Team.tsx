@@ -209,7 +209,7 @@ export function Team() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0, paddingRight: '100px' }}>
                       <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)', marginBottom: '2px' }}>{member.name}</div>
-                      <div style={{ fontSize: '10px', color: 'var(--gold)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.85 }}>{member.role}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--gold-text)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.85 }}>{member.role}</div>
                       <div style={{ fontSize: '12px', color: task ? 'var(--text-secondary)' : 'var(--text-muted)', fontStyle: task ? 'normal' : 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {task || (status === 'Lunch' ? 'On lunch break' : status === 'Working' ? 'Working...' : status === 'Online' ? 'Available' : '')}
                       </div>

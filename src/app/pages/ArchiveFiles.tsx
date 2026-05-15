@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useEOD, type EmployeeEOD } from '../contexts/EODContext';
 import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { ChevronDown, ChevronUp, Download, FileText, Video, Clock } from 'lucide-react';
-import { exportEODEntry, exportPayrollWeek } from '../../lib/exportXlsx';
+import { exportEODEntry, exportPayrollWeek, exportAllEODs } from '../../lib/exportXlsx';
 
 function getMonday(dateStr: string): Date | null {
   let d = new Date(dateStr);
@@ -72,8 +72,8 @@ function groupByWeek(entries: EmployeeEOD['entries']): Map<string, EmployeeEOD['
 
 // ── EOD Sub-tab ──────────────────────────────────────────────────────────────
 
-function WeekBlockEOD({ weekKey, entries, employeeName }: { weekKey: string; entries: EmployeeEOD['entries']; employeeName: string }) {
-  const [open, setOpen] = useState(true);
+function WeekBlockEOD({ weekKey, entries, employeeName, defaultOpen }: { weekKey: string; entries: EmployeeEOD['entries']; employeeName: string; defaultOpen: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const totalHrs = calcWeekHours(entries);
 
   return (
@@ -124,11 +124,12 @@ function WeekBlockEOD({ weekKey, entries, employeeName }: { weekKey: string; ent
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{entry.tasks.length}</div>
               <div>
                 {entry.loomLink ? (
-                  <a href={entry.loomLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--gold)', textDecoration: 'none', opacity: 0.8 }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = '0.8')}
+                  <a href={entry.loomLink} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '5px', fontSize: '10px', fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--gold)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border-gold)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)'; }}
                   >
-                    <Video size={12} /> View
+                    <Video size={10} /> View
                   </a>
                 ) : (
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>-</span>
@@ -164,8 +165,18 @@ function EODTab({ eod }: { eod: EmployeeEOD }) {
 
   return (
     <div>
-      {sortedKeys.map(key => (
-        <WeekBlockEOD key={key} weekKey={key} entries={weekMap.get(key)!} employeeName={eod.employeeName} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <button
+          onClick={() => exportAllEODs(eod)}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, background: 'rgba(232,201,141,0.09)', border: '1px solid var(--border-gold)', color: 'var(--gold)', cursor: 'pointer', letterSpacing: '0.06em', transition: 'all 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232,201,141,0.16)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(232,201,141,0.09)'; }}
+        >
+          <Download size={12} /> Download All EODs
+        </button>
+      </div>
+      {sortedKeys.map((key, idx) => (
+        <WeekBlockEOD key={key} weekKey={key} entries={weekMap.get(key)!} employeeName={eod.employeeName} defaultOpen={idx === 0} />
       ))}
     </div>
   );
@@ -173,8 +184,8 @@ function EODTab({ eod }: { eod: EmployeeEOD }) {
 
 // ── Payroll Sub-tab ──────────────────────────────────────────────────────────
 
-function WeekBlockPayroll({ weekKey, entries, employeeName }: { weekKey: string; entries: EmployeeEOD['entries']; employeeName: string }) {
-  const [open, setOpen] = useState(true);
+function WeekBlockPayroll({ weekKey, entries, employeeName, defaultOpen }: { weekKey: string; entries: EmployeeEOD['entries']; employeeName: string; defaultOpen: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const totalHrs = calcWeekHours(entries);
 
   return (
@@ -271,8 +282,8 @@ function PayrollTab({ eod }: { eod: EmployeeEOD }) {
           </div>
         ))}
       </div>
-      {sortedKeys.map(key => (
-        <WeekBlockPayroll key={key} weekKey={key} entries={weekMap.get(key)!} employeeName={eod.employeeName} />
+      {sortedKeys.map((key, idx) => (
+        <WeekBlockPayroll key={key} weekKey={key} entries={weekMap.get(key)!} employeeName={eod.employeeName} defaultOpen={idx === 0} />
       ))}
     </div>
   );

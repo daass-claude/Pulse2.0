@@ -13,6 +13,7 @@
   --gold:         #E8C98D;
   --gold-light:   #F0D8A0;
   --gold-dark:    #C9A96E;
+  --gold-text:    #E8C98D;  /* readable gold text — overridden to dark amber in light mode */
   --gold-muted:   rgba(232, 201, 141, 0.12);
   --gold-border:  rgba(232, 201, 141, 0.18);
   --gold-glow:    rgba(232, 201, 141, 0.35);
@@ -77,6 +78,7 @@
   --shadow-gold:     0 4px 16px rgba(180,145,90,0.18);
 
   --gold-muted:  rgba(201, 169, 110, 0.14);
+  --gold-text:   #7A4C08;  /* dark amber — readable on the light parchment background */
 
   --bg-overlay: rgba(220,210,195,0.88);
   --bg-hover:   rgba(0,0,0,0.035);

@@ -89,7 +89,7 @@ export function Analytics() {
     let totalDaysWorked   = 0;
     let totalTasksDone    = 0;
     let mostActiveName    = '';
-    let mostActiveDays    = 0;
+    let mostActiveHours   = 0;
 
     const perEmployee: { name: string; hours: number }[] = [];
 
@@ -108,9 +108,9 @@ export function Analytics() {
 
       perEmployee.push({ name: emp.employeeName, hours: empHours });
 
-      if (empDays > mostActiveDays) {
-        mostActiveDays = empDays;
-        mostActiveName = emp.employeeName;
+      if (empHours > mostActiveHours) {
+        mostActiveHours = empHours;
+        mostActiveName  = emp.employeeName;
       }
     }
 
@@ -127,7 +127,7 @@ export function Analytics() {
       avgDailyHours,
       totalTasksDone,
       mostActiveName,
-      mostActiveDays,
+      mostActiveHours,
       perEmployee,
     };
   }, [employeeEODs]);
@@ -258,7 +258,7 @@ export function Analytics() {
                   }}>
                     {stats.mostActiveName || '—'}
                   </div>
-                  <div style={subLabel}>{stats.mostActiveDays} day{stats.mostActiveDays !== 1 ? 's' : ''} logged</div>
+                  <div style={subLabel}>{formatDecimalHours(Math.round(stats.mostActiveHours * 10) / 10)} worked</div>
                 </div>
               </div>
 

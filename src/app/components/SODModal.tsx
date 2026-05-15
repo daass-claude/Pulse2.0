@@ -232,7 +232,7 @@ export function SODModal({ onComplete }: SODModalProps) {
                 <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Optional</div>
               </div>
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--gold)', fontStyle: 'italic', marginBottom: '10px', lineHeight: 1.6, opacity: 0.8 }}>
+            <p style={{ fontSize: '12px', color: 'var(--gold-text)', fontStyle: 'italic', marginBottom: '10px', lineHeight: 1.6, opacity: 0.9 }}>
               {gratitudePrompt}
             </p>
             <textarea

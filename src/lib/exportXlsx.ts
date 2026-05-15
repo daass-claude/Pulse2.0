@@ -65,6 +65,39 @@ export function exportPayrollWeek(weekLabel: string, entries: EODEntry[], employ
   download(wb, `Payroll_${safeName}_${safeWeek}.xlsx`);
 }
 
+export function exportAllEODs(eod: EmployeeEOD) {
+  const wb = XLSX.utils.book_new();
+  const header = ['Prio level', 'Task Status', 'Specific Task', 'Related Links', 'Time', 'Notes/ Challenges/ etc.'];
+  const hints  = ['',           '',             '',               'or N/A',        'h/m',  'Jargons'];
+
+  // Sort newest-first so the first sheet is the most recent day
+  const sorted = [...eod.entries].sort((a, b) => {
+    const pa = a.date.replace(/^[^,]+,\s*/, '');
+    const pb = b.date.replace(/^[^,]+,\s*/, '');
+    return new Date(`${pb}, ${new Date().getFullYear()}`).getTime() -
+           new Date(`${pa}, ${new Date().getFullYear()}`).getTime();
+  });
+
+  for (const entry of sorted) {
+    const dataRows = entry.tasks.map(t => [
+      t.priority || '',
+      t.status,
+      t.task || '(unnamed)',
+      t.relatedLinks || 'N/A',
+      fmtTime(t.elapsedTime),
+      t.notes || '',
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([header, hints, ...dataRows]);
+    ws['!cols'] = [{ wch: 14 }, { wch: 13 }, { wch: 32 }, { wch: 20 }, { wch: 8 }, { wch: 36 }];
+    // Excel sheet names max 31 chars; strip commas
+    const sheetName = entry.date.replace(/,\s*/g, ' ').slice(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  }
+
+  const safeName = eod.employeeName.replace(/\s+/g, '_');
+  download(wb, `EOD_${safeName}_All.xlsx`);
+}
+
 export function exportPayrollAll(eod: EmployeeEOD) {
   let totalMin = 0;
   const rows = eod.entries.map(e => {
