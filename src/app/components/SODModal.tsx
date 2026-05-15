@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, Quote, Target, Clock } from 'lucide-react';
-import { getDailyGratitudePrompt, getDailyDateKey, isQuoteTurn, getQuoteTurnName } from '../lib/gratitudePrompts';
+import { getDailyGratitudePrompt, getDailyDateKey } from '../lib/gratitudePrompts';
 import { useAuth } from '../auth/AuthContext';
 import { supabase } from '../../lib/supabase';
 
@@ -33,8 +33,6 @@ const iconBox = (bg: string, border: string) => ({
 export function SODModal({ onComplete }: SODModalProps) {
   const { user } = useAuth();
   const gratitudePrompt = getDailyGratitudePrompt();
-  const showQuote       = user ? isQuoteTurn(user.email) : false;
-  const quoteTurnName   = getQuoteTurnName();
 
   const savedTz = (localStorage.getItem(`pulse2_tz_${user?.email}`) ?? user?.tz ?? 'PHT') as 'PHT' | 'EST';
 
@@ -245,26 +243,24 @@ export function SODModal({ onComplete }: SODModalProps) {
           </div>
 
           {/* Quote of the Day */}
-          {showQuote && (
-            <div style={{ ...cardStyle, borderColor: 'rgba(232,201,141,0.22)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <div style={iconBox('linear-gradient(135deg, rgba(232,201,141,0.22), rgba(201,169,110,0.1))', 'var(--border-gold)')}>
-                  <Quote size={13} style={{ color: 'var(--gold)' }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)' }}>It's your turn: Quote of the Day</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Optional · Shared with team</div>
-                </div>
+          <div style={{ ...cardStyle, borderColor: 'rgba(232,201,141,0.22)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <div style={iconBox('linear-gradient(135deg, rgba(232,201,141,0.22), rgba(201,169,110,0.1))', 'var(--border-gold)')}>
+                <Quote size={13} style={{ color: 'var(--gold)' }} />
               </div>
-              <textarea
-                value={quote}
-                onChange={e => setQuote(e.target.value)}
-                placeholder={`Share an inspiring quote for the team, ${quoteTurnName}…`}
-                className="field-input"
-                style={{ width: '100%', height: '70px', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', resize: 'none', lineHeight: '1.6' }}
-              />
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)' }}>Quote of the Day</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Optional · Shared with team</div>
+              </div>
             </div>
-          )}
+            <textarea
+              value={quote}
+              onChange={e => setQuote(e.target.value)}
+              placeholder="Share an inspiring quote for the team… (optional)"
+              className="field-input"
+              style={{ width: '100%', height: '70px', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', resize: 'none', lineHeight: '1.6' }}
+            />
+          </div>
 
           {/* Submit */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', paddingTop: '6px' }}>

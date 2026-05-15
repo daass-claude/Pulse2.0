@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, Quote } from 'lucide-react';
 import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { getDailyDateKey } from '../lib/gratitudePrompts';
 
 function Avatar({ email, name }: { email: string; name: string }) {
   const cached = localStorage.getItem(`pulse2_pic_${email}`);
@@ -81,6 +82,7 @@ export function Team() {
   const [loading, setLoading] = useState(true);
   // Supabase live_status cache: email → { status, current_task }
   const [liveData, setLiveData] = useState<Record<string, { status: Status; current_task: string; updated_at: string }>>({});
+  const [todayQuotes, setTodayQuotes] = useState<Array<{ email: string; name: string; quote: string }>>([]);
 
   const fetchLiveData = () => {
     supabase.from('live_status').select('email, status, current_task, updated_at').then(({ data }) => {
@@ -94,6 +96,23 @@ export function Team() {
 
   // Initial load
   useEffect(() => { fetchLiveData(); }, []);
+
+  // Fetch today's quotes from SOD entries
+  useEffect(() => {
+    const today = getDailyDateKey();
+    supabase.from('sod_entries').select('email, quote').eq('date', today)
+      .then(({ data }) => {
+        if (!data) return;
+        const quotes = data
+          .filter(row => row.quote?.trim())
+          .map(row => {
+            const member = TEAM_MEMBERS.find(m => m.email === row.email);
+            return member ? { email: row.email, name: member.name, quote: row.quote as string } : null;
+          })
+          .filter(Boolean) as Array<{ email: string; name: string; quote: string }>;
+        setTodayQuotes(quotes);
+      });
+  }, []);
 
   // Polling fallback — re-fetches every 10s in case Realtime misses an event
   useEffect(() => {
@@ -150,6 +169,29 @@ export function Team() {
     }}>
       <div style={{ flex: 1, overflow: 'auto', padding: isMobile ? '24px 16px' : '32px 40px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+          {/* Today's Quotes */}
+          {todayQuotes.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '12px' }}>
+                <Quote size={12} style={{ color: 'var(--gold)', opacity: 0.7 }} />
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Today's Quotes</span>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {todayQuotes.map(q => (
+                  <div key={q.email} className="glass-card" style={{ borderRadius: '12px', padding: '14px 18px', flex: '1 1 200px', maxWidth: isMobile ? '100%' : '360px', border: '1px solid rgba(232,201,141,0.18)', background: 'linear-gradient(135deg, var(--bg-card), rgba(232,201,141,0.03))' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '9px' }}>
+                      <div style={{ width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--gold-light), var(--gold-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--border-gold)' }}>
+                        <Avatar email={q.email} name={q.name} />
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>{q.name}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--gold-text)', fontStyle: 'italic', lineHeight: 1.65, opacity: 0.9 }}>"{q.quote}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Stat cards */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', gap: '14px' }}>
