@@ -53,7 +53,17 @@ export function Dashboard() {
   );
 
   const [tasks, setTasks] = useState<Task[]>(() => {
-    try { return JSON.parse(localStorage.getItem(`pulse2_tasks_${user?.email}`) || '[]'); } catch { return []; }
+    try {
+      const saved: Task[] = JSON.parse(localStorage.getItem(`pulse2_tasks_${user?.email}`) || '[]');
+      const savedAt = parseInt(localStorage.getItem(`pulse2_tasks_saved_${user?.email}`) || '0', 10);
+      if (!savedAt) return saved;
+      const gap = Math.max(0, Math.floor((Date.now() - savedAt) / 1000));
+      if (gap === 0) return saved;
+      // Add the time elapsed while Dashboard was unmounted (e.g. user was on Profile)
+      return saved.map(t =>
+        t.status === 'In Progress' && t.startTime ? { ...t, elapsedTime: t.elapsedTime + gap } : t
+      );
+    } catch { return []; }
   });
   const [isLunch, setIsLunch] = useState(() => localStorage.getItem(`pulse2_lunch_${user?.email}`) === '1');
   const [lunchStartTime, setLunchStartTime] = useState<number | null>(() => {
@@ -86,7 +96,12 @@ export function Dashboard() {
 
   // ── localStorage mirrors ─────────────────────────────────
   useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_login_time_${user.email}`, loginTime); }, [loginTime, user?.email]);
-  useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_tasks_${user.email}`, JSON.stringify(tasks)); }, [tasks, user?.email]);
+  useEffect(() => {
+    if (user?.email) {
+      localStorage.setItem(`pulse2_tasks_${user.email}`, JSON.stringify(tasks));
+      localStorage.setItem(`pulse2_tasks_saved_${user.email}`, Date.now().toString());
+    }
+  }, [tasks, user?.email]);
   useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_loom_${user.email}`, loomLink); }, [loomLink, user?.email]);
 
   // Pause tasks + set Offline on tab close or app background; re-publish on return
@@ -106,16 +121,14 @@ export function Dashboard() {
     const pauseInProgressTasks = () => {
       const current = tasksRef.current;
       if (!current.some(t => t.status === 'In Progress')) return current;
-      const ts  = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const now = Date.now();
+      const ts = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       const paused = current.map(t => {
         if (t.status !== 'In Progress') return t;
-        const extra = t.startTime ? Math.floor((now - t.startTime) / 1000) : 0;
         return {
           ...t,
           status:      'Done' as const,
           startTime:   null,
-          elapsedTime: t.elapsedTime + extra,
+          elapsedTime: t.elapsedTime,  // timer already tracked this; no extra needed
           timeLog:     [...(t.timeLog ?? []), { action: 'pause' as const, time: ts }],
         };
       });
@@ -384,11 +397,19 @@ export function Dashboard() {
       .select('name, created_at')
       .eq('user_email', user.email)
       .order('created_at', { ascending: true })
-      .then(({ data }) => {
-        if (!data?.length) return;
+      .then(({ data, error }) => {
+        if (error) return; // keep localStorage on network error
+        const supabaseNames = (data ?? []).map((r: { name: string }) => r.name);
         setRoutines(prev => {
-          const merged = [...new Set([...prev, ...data.map((r: { name: string }) => r.name)])];
+          // Items only in localStorage (added while offline or before Supabase was wired up)
+          const localOnly = prev.filter(r => !supabaseNames.includes(r));
+          const merged = [...supabaseNames, ...localOnly];
           localStorage.setItem(`pulse2_routines_${user.email}`, JSON.stringify(merged));
+          // Backfill any local-only items to Supabase so they persist across devices
+          for (const name of localOnly) {
+            supabase.from('routine_tasks').insert({ user_email: user!.email, name })
+              .then(({ error: e }) => { if (e) console.warn('Routine backfill failed:', e.message); });
+          }
           return merged;
         });
       });
@@ -518,13 +539,18 @@ export function Dashboard() {
               const isActive = userTz === tz;
               const time     = tz === 'PHT' ? pht : est;
               return (
-                <div key={tz} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '8px 20px',
-                  background: isActive ? 'rgba(232,201,141,0.10)' : 'rgba(255,255,255,0.015)',
-                  borderRight: i === 0 ? '1px solid var(--border-gold)' : 'none',
-                  transition: 'background 0.3s ease',
-                }}>
+                <div
+                  key={tz}
+                  onClick={() => { setUserTz(tz); localStorage.setItem(`pulse2_tz_${user!.email}`, tz); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '8px 20px',
+                    background: isActive ? 'rgba(232,201,141,0.10)' : 'rgba(255,255,255,0.015)',
+                    borderRight: i === 0 ? '1px solid var(--border-gold)' : 'none',
+                    transition: 'background 0.3s ease',
+                    cursor: 'pointer',
+                  }}
+                >
                   {isActive && (
                     <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--gold)', boxShadow: '0 0 5px rgba(201,169,110,0.5)', flexShrink: 0 }} />
                   )}

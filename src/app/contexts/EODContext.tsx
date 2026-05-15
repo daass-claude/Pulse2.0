@@ -115,6 +115,26 @@ export function EODProvider({ children }: { children: ReactNode }) {
       });
   }, []);
 
+  // Poll every 60 s so admins see EODs submitted by other users without a page reload
+  useEffect(() => {
+    const poll = setInterval(() => {
+      supabase
+        .from('eod_entries')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .then(({ data }) => {
+          if (data) {
+            setEmployeeEODs(prev => {
+              const merged = mergeSupabaseIntoLocal(prev, data);
+              saveToLocalStorage(merged);
+              return merged;
+            });
+          }
+        });
+    }, 60_000);
+    return () => clearInterval(poll);
+  }, []);
+
   const submitEOD = async (
     employeeName: string,
     employeeEmail: string,

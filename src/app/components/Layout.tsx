@@ -99,7 +99,7 @@ export function Layout() {
               {sidebarOpen ? <XIcon size={20} /> : <Menu size={20} />}
             </button>
           )}
-          <img src="/daass-logo.png" alt="DAASS" className="daass-logo" style={{ height: '34px', objectFit: 'contain', objectPosition: 'left' }} />
+          {!isMobile && <img src="/daass-logo.png" alt="DAASS" className="daass-logo" style={{ height: '34px', objectFit: 'contain', objectPosition: 'left' }} />}
         </div>
 
         {/* Center – page title */}
