@@ -85,24 +85,54 @@ export function Dashboard() {
   useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_tasks_${user.email}`, JSON.stringify(tasks)); }, [tasks, user?.email]);
   useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_loom_${user.email}`, loomLink); }, [loomLink, user?.email]);
 
-  // Set Offline when tab/browser is closed
+  // Offline on tab/browser close or app background; re-publish Online on return
   useEffect(() => {
     if (!user?.email) return;
     const email = user.email;
-    const handleBeforeUnload = () => {
-      fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/live_status`, {
-        method: 'POST', keepalive: true,
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates,return=minimal',
-        },
-        body: JSON.stringify({ email, status: 'Offline', current_task: '', updated_at: new Date().toISOString() }),
-      });
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    const offlinePayload = () => JSON.stringify({
+      email, status: 'Offline', current_task: '', updated_at: new Date().toISOString(),
+    });
+
+    const fetchOffline = () => fetch(`${supabaseUrl}/rest/v1/live_status`, {
+      method: 'POST', keepalive: true,
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: offlinePayload(),
+    });
+
+    // Tab/window close → immediate Offline
+    const handleBeforeUnload = () => fetchOffline();
+
+    // Phone/tablet: re-publish current status when the app comes back to foreground
+    let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Delay Offline by 60s — covers brief tab switches without false Offline flicker
+        hiddenTimer = setTimeout(() => fetchOffline(), 60_000);
+      } else {
+        // App is visible again — cancel pending Offline and re-publish real status
+        if (hiddenTimer) { clearTimeout(hiddenTimer); hiddenTimer = null; }
+        const inProgress = tasksRef.current.find(t => t.status === 'In Progress');
+        const status = inProgress ? 'Working' : isLunchRef.current ? 'Lunch' : sodDoneRef.current ? 'Online' : 'Offline';
+        prevLiveRef.current = null; // bypass dedup so push always fires
+        pushLiveStatus(email, status, inProgress?.task || '');
+      }
     };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (hiddenTimer) clearTimeout(hiddenTimer);
+    };
   }, [user?.email]);
   useEffect(() => {
     if (!user) return;
