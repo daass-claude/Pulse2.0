@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { User as UserIcon, Quote } from 'lucide-react';
+import { User as UserIcon, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -75,6 +75,59 @@ function SkeletonCard() {
   );
 }
 
+const VISIBLE_CARDS = 4;
+
+function QuotesCarousel({ quotes, isMobile }: { quotes: Array<{ email: string; name: string; quote: string }>; isMobile: boolean }) {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(quotes.length / VISIBLE_CARDS);
+  const visible = quotes.slice(page * VISIBLE_CARDS, page * VISIBLE_CARDS + VISIBLE_CARDS);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '12px' }}>
+        <Quote size={12} style={{ color: 'var(--gold)', opacity: 0.7 }} />
+        <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Today's Quotes</span>
+        {totalPages > 1 && (
+          <span style={{ marginLeft: 'auto', fontSize: '10px', color: 'var(--text-muted)' }}>{page + 1} / {totalPages}</span>
+        )}
+      </div>
+      <div style={{ position: 'relative' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : `repeat(${Math.min(visible.length, VISIBLE_CARDS)}, 1fr)`, gap: '12px' }}>
+          {visible.map(q => (
+            <div key={q.email} className="glass-card" style={{ borderRadius: '12px', padding: '14px 18px', border: '1px solid rgba(232,201,141,0.18)', background: 'linear-gradient(135deg, var(--bg-card), rgba(232,201,141,0.03))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '9px' }}>
+                <div style={{ width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--gold-light), var(--gold-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--border-gold)' }}>
+                  <Avatar email={q.email} name={q.name} />
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>{q.name}</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--gold-text)', fontStyle: 'italic', lineHeight: 1.65, opacity: 0.9 }}>"{q.quote}"</p>
+            </div>
+          ))}
+        </div>
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', cursor: page === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: page === 0 ? 0.3 : 1, transition: 'opacity 0.15s' }}
+            >
+              <ChevronLeft size={14} style={{ color: 'var(--text-secondary)' }} />
+            </button>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: page === totalPages - 1 ? 0.3 : 1, transition: 'opacity 0.15s' }}
+            >
+              <ChevronRight size={14} style={{ color: 'var(--text-secondary)' }} />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function Team() {
   const isMobile = useIsMobile();
   const [now, setNow] = useState(new Date());
@@ -125,9 +178,10 @@ export function Team() {
     const channel = supabase
       .channel('live_status_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_status' }, payload => {
-        const row = payload.new as { email: string; status: Status; current_task: string; updated_at: string };
+        const row = payload.new as { email: string; status: string; current_task: string; updated_at: string };
         if (!row?.email) return;
-        setLiveData(prev => ({ ...prev, [row.email]: { status: row.status, current_task: row.current_task, updated_at: row.updated_at } }));
+        const validStatus = (row.status === 'Working' || row.status === 'Online' || row.status === 'Lunch' || row.status === 'Offline') ? row.status as Status : 'Offline';
+        setLiveData(prev => ({ ...prev, [row.email]: { status: validStatus, current_task: row.current_task ?? '', updated_at: row.updated_at } }));
       })
       .subscribe((status, err) => {
         if (err) console.warn('live_status realtime subscription error:', err.message);
@@ -175,25 +229,7 @@ export function Team() {
 
           {/* Today's Quotes */}
           {todayQuotes.length > 0 && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '12px' }}>
-                <Quote size={12} style={{ color: 'var(--gold)', opacity: 0.7 }} />
-                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Today's Quotes</span>
-              </div>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                {todayQuotes.map(q => (
-                  <div key={q.email} className="glass-card" style={{ borderRadius: '12px', padding: '14px 18px', flex: '1 1 200px', maxWidth: isMobile ? '100%' : '360px', border: '1px solid rgba(232,201,141,0.18)', background: 'linear-gradient(135deg, var(--bg-card), rgba(232,201,141,0.03))' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '9px' }}>
-                      <div style={{ width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, var(--gold-light), var(--gold-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--border-gold)' }}>
-                        <Avatar email={q.email} name={q.name} />
-                      </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>{q.name}</span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--gold-text)', fontStyle: 'italic', lineHeight: 1.65, opacity: 0.9 }}>"{q.quote}"</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <QuotesCarousel quotes={todayQuotes} isMobile={isMobile} />
           )}
 
           {/* Stat cards */}
@@ -228,8 +264,8 @@ export function Team() {
               : filtered.map(member => {
               const status = getStatus(member.email);
               const task   = getTask(member.email);
-              const storedTz = localStorage.getItem(`pulse2_tz_${member.email}`) as 'PHT' | 'EST' | null;
-              const tz       = storedTz ?? member.tz ?? 'PHT';
+              const _storedTz = localStorage.getItem(`pulse2_tz_${member.email}`);
+              const tz = (_storedTz === 'PHT' || _storedTz === 'EST') ? _storedTz : (member.tz === 'EST' ? 'EST' : 'PHT');
               const tzTime   = getMemberTime(tz, now);
 
               return (

@@ -101,7 +101,7 @@ function EntryCard({ entry, employeeName, defaultOpen = false }: { entry: Employ
                       {(task.timeLog?.length ?? 0) > 0 && (
                         <div style={{ marginTop: '3px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {task.timeLog!.map((l, i) => (
-                            <span key={i} style={{ fontSize: '10px', color: l.action === 'start' ? 'var(--status-working)' : 'var(--gold)', opacity: 0.7, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <span key={i} style={{ fontSize: '10px', color: l.action === 'start' ? 'var(--status-working)' : 'var(--gold-text)', opacity: 0.85, display: 'flex', alignItems: 'center', gap: '2px' }}>
                               {i > 0 && <span style={{ color: 'var(--text-muted)', opacity: 0.4 }}>·</span>}
                               {l.action === 'start' ? '▶' : '⏸'} {l.time}
                             </span>

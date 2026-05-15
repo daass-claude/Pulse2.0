@@ -154,7 +154,7 @@ export function Profile() {
               <Sparkles size={14} style={{ color: 'var(--gold)' }} />
               {sectionLabel("Today's Gratitude")}
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--gold)', fontStyle: 'italic', marginBottom: '12px', lineHeight: 1.6, opacity: 0.8 }}>
+            <p style={{ fontSize: '12px', color: 'var(--gold-text)', fontStyle: 'italic', marginBottom: '12px', lineHeight: 1.6, opacity: 0.9 }}>
               {gratitudePrompt}
             </p>
             {readOnlyBlock(sodGratitude, "No gratitude entry yet. Answer the prompt when you begin your day.")}

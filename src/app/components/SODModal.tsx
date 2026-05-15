@@ -33,7 +33,8 @@ const iconBox = (bg: string, border: string) => ({
 export function SODModal({ onComplete }: SODModalProps) {
   const { user } = useAuth();
   const gratitudePrompt = getDailyGratitudePrompt();
-  const savedTz = (localStorage.getItem(`pulse2_tz_${user?.email}`) ?? user?.tz ?? 'PHT') as 'PHT' | 'EST';
+  const _storedTz = localStorage.getItem(`pulse2_tz_${user?.email}`);
+  const savedTz: 'PHT' | 'EST' = (_storedTz === 'PHT' || _storedTz === 'EST') ? _storedTz : (user?.tz === 'EST' ? 'EST' : 'PHT');
 
   const [step, setStep]             = useState<0 | 1>(0);
   const [tz, setTz]                 = useState<'PHT' | 'EST'>(savedTz);

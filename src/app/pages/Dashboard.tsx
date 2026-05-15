@@ -41,9 +41,10 @@ export function Dashboard() {
     user ? sessionStorage.getItem(`pulse2_eod_done_${user.email}`) === '1' : false
   );
 
-  const [userTz, setUserTz] = useState<'PHT' | 'EST'>(() =>
-    (localStorage.getItem(`pulse2_tz_${user?.email}`) ?? user?.tz ?? 'PHT') as 'PHT' | 'EST'
-  );
+  const [userTz, setUserTz] = useState<'PHT' | 'EST'>(() => {
+    const stored = localStorage.getItem(`pulse2_tz_${user?.email}`);
+    return (stored === 'PHT' || stored === 'EST') ? stored : (user?.tz === 'EST' ? 'EST' : 'PHT');
+  });
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
