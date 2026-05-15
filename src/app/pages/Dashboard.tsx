@@ -44,6 +44,10 @@ export function Dashboard() {
     user ? !hasDoneSODThisSession(user.email) : false
   );
 
+  const [eodSubmittedToday, setEodSubmittedToday] = useState(() =>
+    user ? sessionStorage.getItem(`pulse2_eod_done_${user.email}`) === '1' : false
+  );
+
   const [userTz, setUserTz] = useState<'PHT' | 'EST'>(() =>
     (localStorage.getItem(`pulse2_tz_${user?.email}`) ?? user?.tz ?? 'PHT') as 'PHT' | 'EST'
   );
@@ -362,6 +366,9 @@ export function Dashboard() {
     localStorage.removeItem(`pulse2_login_time_${user!.email}`);
     if (user) localStorage.removeItem(`pulse2_lunch_start_${user.email}`);
     await pushLiveStatus(user!.email, 'Offline', '');
+    // Lock EOD for this session — cleared on tab close (sessionStorage)
+    sessionStorage.setItem(`pulse2_eod_done_${user!.email}`, '1');
+    setEodSubmittedToday(true);
   };
 
   // ── Routine / Quick-start tasks ─────────────────────────
@@ -777,21 +784,35 @@ export function Dashboard() {
             </div>
 
             {/* Action buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-              <button onClick={addTask} className="ghost-btn" style={{ padding: '13px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', letterSpacing: '0.04em' }}>
-                <Plus size={14} /> Add Task
-              </button>
-              <button onClick={pauseAll} style={{ padding: '13px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.18)', color: 'var(--status-lunch)', cursor: 'pointer', transition: 'all 0.15s ease', letterSpacing: '0.04em' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.13)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.07)')}>
-                Lunch Break
-              </button>
-              <button onClick={handleFinalizeClick} style={{ padding: '13px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', color: '#EF4444', cursor: 'pointer', transition: 'all 0.15s ease', letterSpacing: '0.04em' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.13)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.07)')}>
-                Finalize EOD
-              </button>
-            </div>
+            {eodSubmittedToday ? (
+              <div style={{
+                padding: '16px 22px', borderRadius: '10px', textAlign: 'center',
+                background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)',
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--status-working)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  ✓ Day Submitted
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  EOD sent. Close the tab and reopen to start a new session.
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <button onClick={addTask} className="ghost-btn" style={{ padding: '13px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', letterSpacing: '0.04em' }}>
+                  <Plus size={14} /> Add Task
+                </button>
+                <button onClick={pauseAll} style={{ padding: '13px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.18)', color: 'var(--status-lunch)', cursor: 'pointer', transition: 'all 0.15s ease', letterSpacing: '0.04em' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.13)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.07)')}>
+                  Lunch Break
+                </button>
+                <button onClick={handleFinalizeClick} style={{ padding: '13px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', color: '#EF4444', cursor: 'pointer', transition: 'all 0.15s ease', letterSpacing: '0.04em' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.13)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.07)')}>
+                  Finalize EOD
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
