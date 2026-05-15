@@ -85,43 +85,82 @@ export function Dashboard() {
   useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_tasks_${user.email}`, JSON.stringify(tasks)); }, [tasks, user?.email]);
   useEffect(() => { if (user?.email) localStorage.setItem(`pulse2_loom_${user.email}`, loomLink); }, [loomLink, user?.email]);
 
-  // Offline on tab/browser close or app background; re-publish Online on return
+  // Pause tasks + set Offline on tab close or app background; re-publish on return
   useEffect(() => {
     if (!user?.email) return;
     const email = user.email;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const headers = {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
+    };
 
-    const offlinePayload = () => JSON.stringify({
-      email, status: 'Offline', current_task: '', updated_at: new Date().toISOString(),
-    });
+    // Pause any in-progress tasks, save to localStorage, return the paused list
+    const pauseInProgressTasks = () => {
+      const current = tasksRef.current;
+      if (!current.some(t => t.status === 'In Progress')) return current;
+      const ts  = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const now = Date.now();
+      const paused = current.map(t => {
+        if (t.status !== 'In Progress') return t;
+        const extra = t.startTime ? Math.floor((now - t.startTime) / 1000) : 0;
+        return {
+          ...t,
+          status:      'Done' as const,
+          startTime:   null,
+          elapsedTime: t.elapsedTime + extra,
+          timeLog:     [...(t.timeLog ?? []), { action: 'pause' as const, time: ts }],
+        };
+      });
+      localStorage.setItem(`pulse2_tasks_${email}`, JSON.stringify(paused));
+      return paused;
+    };
 
+    // keepalive fetch helpers (fire-and-forget, survive tab close)
     const fetchOffline = () => fetch(`${supabaseUrl}/rest/v1/live_status`, {
-      method: 'POST', keepalive: true,
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: offlinePayload(),
+      method: 'POST', keepalive: true, headers,
+      body: JSON.stringify({ email, status: 'Offline', current_task: '', updated_at: new Date().toISOString() }),
     });
 
-    // Tab/window close → immediate Offline
-    const handleBeforeUnload = () => fetchOffline();
+    const fetchDailyTasks = (tasks: Task[]) => fetch(`${supabaseUrl}/rest/v1/daily_tasks`, {
+      method: 'POST', keepalive: true, headers,
+      body: JSON.stringify({
+        email,
+        tasks,
+        loom_link:  loomRef.current,
+        login_time: localStorage.getItem(`pulse2_login_time_${email}`) || '',
+        is_lunch:   false,
+        updated_at: new Date().toISOString(),
+      }),
+    });
 
-    // Phone/tablet: re-publish current status when the app comes back to foreground
+    // On close: pause tasks, sync both tables
+    const handleBeforeUnload = () => {
+      const paused = pauseInProgressTasks();
+      fetchOffline();
+      fetchDailyTasks(paused);
+    };
+
+    // On mobile/background: delay Offline 60s (covers brief tab switches)
     let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        // Delay Offline by 60s — covers brief tab switches without false Offline flicker
-        hiddenTimer = setTimeout(() => fetchOffline(), 60_000);
+        hiddenTimer = setTimeout(() => {
+          const paused = pauseInProgressTasks();
+          setTasks(paused); // update UI so tasks show as paused when user returns
+          tasksRef.current = paused;
+          fetchOffline();
+          fetchDailyTasks(paused);
+        }, 60_000);
       } else {
-        // App is visible again — cancel pending Offline and re-publish real status
+        // App visible again — cancel pending timer, re-publish current status
         if (hiddenTimer) { clearTimeout(hiddenTimer); hiddenTimer = null; }
         const inProgress = tasksRef.current.find(t => t.status === 'In Progress');
         const status = inProgress ? 'Working' : isLunchRef.current ? 'Lunch' : sodDoneRef.current ? 'Online' : 'Offline';
-        prevLiveRef.current = null; // bypass dedup so push always fires
+        prevLiveRef.current = null;
         pushLiveStatus(email, status, inProgress?.task || '');
       }
     };
@@ -133,7 +172,7 @@ export function Dashboard() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (hiddenTimer) clearTimeout(hiddenTimer);
     };
-  }, [user?.email]);
+  }, [user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!user) return;
     localStorage.setItem(`pulse2_lunch_${user.email}`, isLunch ? '1' : '0');
