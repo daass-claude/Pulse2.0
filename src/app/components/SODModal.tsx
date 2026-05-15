@@ -33,11 +33,10 @@ const iconBox = (bg: string, border: string) => ({
 export function SODModal({ onComplete }: SODModalProps) {
   const { user } = useAuth();
   const gratitudePrompt = getDailyGratitudePrompt();
-
   const savedTz = (localStorage.getItem(`pulse2_tz_${user?.email}`) ?? user?.tz ?? 'PHT') as 'PHT' | 'EST';
 
-  const [step, setStep]         = useState<0 | 1>(0);
-  const [tz, setTz]             = useState<'PHT' | 'EST'>(savedTz);
+  const [step, setStep]             = useState<0 | 1>(0);
+  const [tz, setTz]                 = useState<'PHT' | 'EST'>(savedTz);
   const [priorities, setPriorities] = useState('');
   const [gratitude, setGratitude]   = useState('');
   const [quote, setQuote]           = useState('');
@@ -58,19 +57,16 @@ export function SODModal({ onComplete }: SODModalProps) {
     const dateKey = getDailyDateKey();
     const data: SODData = {
       priorities: priorities.trim(),
-      gratitude: gratitude.trim(),
-      quote: quote.trim(),
+      gratitude:  gratitude.trim(),
+      quote:      quote.trim(),
       tz,
       date: dateKey,
     };
 
-    // Store tz preference + SOD data locally
     localStorage.setItem(`pulse2_tz_${user?.email}`, tz);
     localStorage.setItem(`pulse2_sod_${user?.email}_${dateKey}`, JSON.stringify(data));
-    // Mark session as done so modal doesn't repeat on refresh
     sessionStorage.setItem(`pulse2_sod_session_${user?.email}`, '1');
 
-    // Sync to Supabase in background
     if (user?.email) {
       supabase.from('sod_entries').upsert({
         email:      user.email,
@@ -86,13 +82,13 @@ export function SODModal({ onComplete }: SODModalProps) {
     onComplete(data);
   };
 
-  const now = new Date();
+  const now     = new Date();
   const timeStr = now.toLocaleTimeString('en-US', {
     hour: '2-digit', minute: '2-digit', hour12: true,
     timeZone: tz === 'PHT' ? 'Asia/Manila' : 'America/New_York',
   });
   const greeting = now.getHours() < 12 ? 'Good Morning' : now.getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const dateStr  = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   // ── Welcome screen ────────────────────────────────────────────────────────
   if (step === 0) {
@@ -166,16 +162,13 @@ export function SODModal({ onComplete }: SODModalProps) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-          {/* PHT / EST toggle */}
+          {/* Timezone */}
           <div style={{ ...cardStyle }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
               <div style={iconBox('linear-gradient(135deg, rgba(232,201,141,0.18), rgba(201,169,110,0.08))', 'var(--border-gold)')}>
                 <Clock size={14} style={{ color: 'var(--gold)' }} />
               </div>
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>Your working timezone</div>
-                {!tz && <div style={{ fontSize: '10px', color: 'var(--danger)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Required</div>}
-              </div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>Your working timezone</div>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               {(['PHT', 'EST'] as const).map(option => (
@@ -242,7 +235,7 @@ export function SODModal({ onComplete }: SODModalProps) {
             />
           </div>
 
-          {/* Quote of the Day */}
+          {/* Quote of the Day — shown to all users, optional */}
           <div style={{ ...cardStyle, borderColor: 'rgba(232,201,141,0.22)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <div style={iconBox('linear-gradient(135deg, rgba(232,201,141,0.22), rgba(201,169,110,0.1))', 'var(--border-gold)')}>
@@ -264,7 +257,7 @@ export function SODModal({ onComplete }: SODModalProps) {
 
           {/* Submit */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', paddingTop: '6px' }}>
-            {!canSubmit && !isAdmin && (
+            {!canSubmit && (
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
                 Fill in Priorities to continue
               </p>
@@ -291,6 +284,7 @@ export function SODModal({ onComplete }: SODModalProps) {
               </button>
             )}
           </div>
+
         </div>
       </div>
     </div>
