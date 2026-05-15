@@ -196,3 +196,19 @@ ALTER TABLE public.sod_entries ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "sod_entries_anon_all" ON public.sod_entries;
 CREATE POLICY "sod_entries_anon_all" ON public.sod_entries FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sod_entries TO anon, authenticated;
+
+
+-- ============================================================
+-- 7. PROFILES TABLE
+-- Stores compressed Base64 profile picture per user.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.profiles (
+  email      TEXT        PRIMARY KEY,
+  avatar     TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "profiles_anon_all" ON public.profiles;
+CREATE POLICY "profiles_anon_all" ON public.profiles FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO anon, authenticated;

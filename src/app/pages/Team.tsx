@@ -4,6 +4,23 @@ import { TEAM_MEMBERS } from '../auth/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { useIsMobile } from '../hooks/useIsMobile';
 
+function Avatar({ email, name }: { email: string; name: string }) {
+  const cached = localStorage.getItem(`pulse2_pic_${email}`);
+  const [src, setSrc] = useState(cached || '');
+  useEffect(() => {
+    if (src) return;
+    supabase.from('profiles').select('avatar').eq('email', email).single()
+      .then(({ data }) => {
+        if (data?.avatar) {
+          setSrc(data.avatar);
+          localStorage.setItem(`pulse2_pic_${email}`, data.avatar);
+        }
+      });
+  }, [email, src]);
+  if (src) return <img src={src} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
+  return <UserIcon size={21} style={{ color: '#090B0E' }} />;
+}
+
 type Status = 'Working' | 'Online' | 'Lunch' | 'Offline';
 
 const STATUS_COLORS: Record<Status, string> = {
@@ -203,9 +220,9 @@ export function Team() {
                       width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
                       background: 'linear-gradient(135deg, var(--gold-light), var(--gold-dark))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: 'var(--shadow-gold)',
+                      boxShadow: 'var(--shadow-gold)', overflow: 'hidden',
                     }}>
-                      <UserIcon size={21} style={{ color: '#090B0E' }} />
+                      <Avatar email={member.email} name={member.name} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0, paddingRight: '100px' }}>
                       <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)', marginBottom: '2px' }}>{member.name}</div>

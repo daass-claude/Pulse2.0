@@ -1,8 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { useEOD } from '../contexts/EODContext';
+import { supabase } from '../../lib/supabase';
 import { User, Upload, Sparkles, Lock, CheckCircle, AlertCircle, ClipboardList } from 'lucide-react';
 import { getDailyGratitudePrompt, getDailyDateKey } from '../lib/gratitudePrompts';
+
+function compressImage(dataUrl: string, maxPx = 200): Promise<string> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = dataUrl;
+  });
+}
 
 export function Profile() {
   const { user, changePassword } = useAuth();
@@ -12,7 +28,8 @@ export function Profile() {
   const gratitudePrompt = getDailyGratitudePrompt();
   const todayKey        = getDailyDateKey();
 
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem('pulse2_pic') || '');
+  const picKey = `pulse2_pic_${user?.email}`;
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem(`pulse2_pic_${user?.email}`) || '');
 
   const [oldPw, setOldPw]         = useState('');
   const [newPw, setNewPw]         = useState('');
@@ -29,7 +46,20 @@ export function Profile() {
   const sodPriorities = (sodData.priorities as string) || '';
   const sodQuote      = (sodData.quote      as string) || '';
 
-  useEffect(() => { localStorage.setItem('pulse2_pic', profilePic); }, [profilePic]);
+  // Keep localStorage in sync for Layout header to pick up
+  useEffect(() => { if (user?.email) localStorage.setItem(picKey, profilePic); }, [profilePic, picKey, user?.email]);
+
+  // Load avatar from Supabase on mount (overrides localStorage if newer)
+  useEffect(() => {
+    if (!user?.email) return;
+    supabase.from('profiles').select('avatar').eq('email', user.email).single()
+      .then(({ data }) => {
+        if (data?.avatar) {
+          setProfilePic(data.avatar);
+          localStorage.setItem(picKey, data.avatar);
+        }
+      });
+  }, [user?.email, picKey]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +80,17 @@ export function Profile() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => setProfilePic(reader.result as string);
+    reader.onloadend = async () => {
+      const compressed = await compressImage(reader.result as string);
+      setProfilePic(compressed);
+      if (user?.email) {
+        localStorage.setItem(picKey, compressed);
+        supabase.from('profiles').upsert(
+          { email: user.email, avatar: compressed, updated_at: new Date().toISOString() },
+          { onConflict: 'email' }
+        ).then(({ error }) => { if (error) console.error('Avatar save error:', error); });
+      }
+    };
     reader.readAsDataURL(file);
   };
 

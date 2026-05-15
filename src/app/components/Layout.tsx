@@ -33,7 +33,8 @@ export function Layout() {
   const isDark     = theme === 'dark';
   const pageTitle  = PAGE_TITLES[location.pathname] ?? '';
 
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem('pulse2_pic') || '');
+  const picKey = user?.email ? `pulse2_pic_${user.email}` : 'pulse2_pic';
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem(user?.email ? `pulse2_pic_${user.email}` : 'pulse2_pic') || '');
   const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dbOk, setDbOk] = useState<boolean | null>(null);
@@ -45,12 +46,21 @@ export function Layout() {
       .then(({ error }) => setDbOk(!error));
   }, []);
 
+  // Load avatar from Supabase once on mount
   useEffect(() => {
-    const sync = () => setProfilePic(localStorage.getItem('pulse2_pic') || '');
+    if (!user?.email) return;
+    supabase.from('profiles').select('avatar').eq('email', user.email).single()
+      .then(({ data }) => {
+        if (data?.avatar) setProfilePic(data.avatar);
+      });
+  }, [user?.email]);
+
+  useEffect(() => {
+    const sync = () => setProfilePic(localStorage.getItem(picKey) || '');
     const interval = setInterval(sync, 2000);
     window.addEventListener('storage', sync);
     return () => { clearInterval(interval); window.removeEventListener('storage', sync); };
-  }, []);
+  }, [picKey]);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
