@@ -4,3 +4,6 @@ const url = (import.meta.env.VITE_SUPABASE_URL as string) || 'https://placeholde
 const key = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'placeholder-key';
 
 export const supabase = createClient(url, key);
+
+// Exposed so the UI can show a warning when env vars are missing from the build
+export const SUPABASE_URL_CONFIGURED = url !== 'https://placeholder.supabase.co';

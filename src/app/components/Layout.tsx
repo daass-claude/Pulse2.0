@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { supabase } from '../../lib/supabase';
+import { supabase, SUPABASE_URL_CONFIGURED } from '../../lib/supabase';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Users, ClipboardList, Archive, UserCircle, LogOut, Sun, Moon, Menu, X as XIcon, BarChart2,
@@ -36,6 +36,14 @@ export function Layout() {
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem('pulse2_pic') || '');
   const [isMobile, setIsMobile]     = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dbOk, setDbOk] = useState<boolean | null>(null);
+
+  // Runtime Supabase connectivity test — runs once on mount
+  useEffect(() => {
+    if (!SUPABASE_URL_CONFIGURED) { setDbOk(false); return; }
+    supabase.from('users').select('email').limit(1)
+      .then(({ error }) => setDbOk(!error));
+  }, []);
 
   useEffect(() => {
     const sync = () => setProfilePic(localStorage.getItem('pulse2_pic') || '');
@@ -55,6 +63,20 @@ export function Layout() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: 'var(--bg-base)' }}>
+
+      {/* ── Supabase connection warning ──────────────────── */}
+      {dbOk === false && (
+        <div style={{
+          background: '#EF4444', color: '#fff', padding: '7px 16px',
+          fontSize: '11px', fontWeight: 600, textAlign: 'center', letterSpacing: '0.04em',
+          flexShrink: 0, zIndex: 100,
+        }}>
+          ⚠ Database not connected — data is saving locally only.
+          {!SUPABASE_URL_CONFIGURED
+            ? ' Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel → Settings → Environment Variables, then redeploy.'
+            : ' Check Supabase project is active and GRANT permissions are applied.'}
+        </div>
+      )}
 
       {/* ── Top bar ─────────────────────────────────────── */}
       <header style={{
