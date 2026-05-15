@@ -37,6 +37,7 @@ ON CONFLICT (email) DO NOTHING;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "users_anon_all" ON public.users;
 CREATE POLICY "users_anon_all" ON public.users FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.users TO anon, authenticated;
 
 -- RPC: check_password — used by AuthContext.login()
 CREATE OR REPLACE FUNCTION public.check_password(p_email TEXT, p_password TEXT)
@@ -84,6 +85,7 @@ CREATE TABLE IF NOT EXISTS public.live_status (
 ALTER TABLE public.live_status ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "live_status_anon_all" ON public.live_status;
 CREATE POLICY "live_status_anon_all" ON public.live_status FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.live_status TO anon, authenticated;
 
 -- Required for Supabase Realtime to send full row payloads on changes
 ALTER TABLE public.live_status REPLICA IDENTITY FULL;
@@ -116,6 +118,7 @@ CREATE TABLE IF NOT EXISTS public.daily_tasks (
 ALTER TABLE public.daily_tasks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "daily_tasks_anon_all" ON public.daily_tasks;
 CREATE POLICY "daily_tasks_anon_all" ON public.daily_tasks FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.daily_tasks TO anon, authenticated;
 
 
 -- ============================================================
@@ -141,6 +144,7 @@ CREATE TABLE IF NOT EXISTS public.eod_entries (
 ALTER TABLE public.eod_entries ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "eod_entries_anon_all" ON public.eod_entries;
 CREATE POLICY "eod_entries_anon_all" ON public.eod_entries FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.eod_entries TO anon, authenticated;
 
 -- Keep updated_at current on upsert
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -169,6 +173,7 @@ CREATE TABLE IF NOT EXISTS public.routine_tasks (
 ALTER TABLE public.routine_tasks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "routine_tasks_anon_all" ON public.routine_tasks;
 CREATE POLICY "routine_tasks_anon_all" ON public.routine_tasks FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.routine_tasks TO anon, authenticated;
 
 
 -- ============================================================
@@ -190,3 +195,4 @@ CREATE TABLE IF NOT EXISTS public.sod_entries (
 ALTER TABLE public.sod_entries ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "sod_entries_anon_all" ON public.sod_entries;
 CREATE POLICY "sod_entries_anon_all" ON public.sod_entries FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.sod_entries TO anon, authenticated;
