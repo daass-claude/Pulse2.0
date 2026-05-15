@@ -125,6 +125,22 @@ export function Dashboard() {
 
   useEffect(() => { syncLiveStatus(tasks, isLunch); }, [tasks, isLunch, syncLiveStatus]);
 
+  // ── Live status heartbeat ────────────────────────────────
+  // Force-push every 45 min so updated_at stays fresh.
+  // Without this, the 10-hour stale check on Team tab would
+  // eventually show an active user as Offline.
+  useEffect(() => {
+    if (!user || showSOD) return;
+    const beat = setInterval(() => {
+      const inProgress = tasksRef.current.find(t => t.status === 'In Progress');
+      const status = inProgress ? 'Working' : isLunchRef.current ? 'Lunch' : sodDoneRef.current ? 'Online' : 'Offline';
+      const task   = inProgress?.task || '';
+      prevLiveRef.current = null; // reset dedup so next syncLiveStatus also fires
+      pushLiveStatus(user.email, status, task);
+    }, 45 * 60 * 1000);
+    return () => clearInterval(beat);
+  }, [user, showSOD]);
+
   // ── daily_tasks sync ─────────────────────────────────────
   // Upserts the current session state so it survives page refresh / browser crash
   const syncDailyNow = useCallback(() => {

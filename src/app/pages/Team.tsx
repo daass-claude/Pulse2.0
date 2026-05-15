@@ -78,9 +78,9 @@ export function Team() {
   // Initial load
   useEffect(() => { fetchLiveData(); }, []);
 
-  // Polling fallback — re-fetches every 20s in case Realtime misses an event
+  // Polling fallback — re-fetches every 10s in case Realtime misses an event
   useEffect(() => {
-    const poll = setInterval(fetchLiveData, 20_000);
+    const poll = setInterval(fetchLiveData, 10_000);
     return () => clearInterval(poll);
   }, []);
 

@@ -59,40 +59,50 @@ function saveToLocalStorage(data: EmployeeEOD[]) {
   localStorage.setItem(LS_KEY, JSON.stringify(data));
 }
 
+// Merge local + Supabase data. Supabase wins on same employee+date.
 function mergeSupabaseIntoLocal(local: EmployeeEOD[], rows: any[]): EmployeeEOD[] {
-  const map = new Map<string, EODEntry[]>();
-  // Seed with local data
-  for (const emp of local) map.set(emp.employeeName, [...emp.entries]);
-  // Merge Supabase rows
+  // Build map: employeeName → Map<date, EODEntry>
+  const map = new Map<string, Map<string, EODEntry>>();
+
+  for (const emp of local) {
+    const dateMap = new Map<string, EODEntry>();
+    for (const entry of emp.entries) dateMap.set(entry.date, entry);
+    map.set(emp.employeeName, dateMap);
+  }
+
+  // Supabase rows overwrite local for the same date (Supabase is authoritative)
   for (const row of rows) {
     const entry: EODEntry = {
-      date: row.date, tasks: row.tasks ?? [],
-      loginTime: row.login_time, logoutTime: row.logout_time,
-      totalHours: row.total_hours, loomLink: row.loom_link ?? undefined,
+      date:       row.date,
+      tasks:      row.tasks ?? [],
+      loginTime:  row.login_time,
+      logoutTime: row.logout_time,
+      totalHours: row.total_hours,
+      loomLink:   row.loom_link ?? undefined,
     };
-    const key = row.employee_name;
-    if (!map.has(key)) { map.set(key, [entry]); continue; }
-    const existing = map.get(key)!;
-    // Avoid duplicate dates
-    if (!existing.some(e => e.date === entry.date && e.loginTime === entry.loginTime)) {
-      existing.push(entry);
-    }
+    if (!map.has(row.employee_name)) map.set(row.employee_name, new Map());
+    map.get(row.employee_name)!.set(entry.date, entry);
   }
-  return [...map.entries()].map(([employeeName, entries]) => ({ employeeName, entries }));
+
+  return [...map.entries()].map(([employeeName, dateMap]) => ({
+    employeeName,
+    entries: [...dateMap.values()],
+  }));
 }
 
 export function EODProvider({ children }: { children: ReactNode }) {
   const [employeeEODs, setEmployeeEODs] = useState<EmployeeEOD[]>(loadFromLocalStorage);
   const [eodLoading, setEodLoading] = useState(true);
 
-  // On mount: load from localStorage immediately, then merge Supabase data
+  // On mount: load localStorage immediately, then fetch Supabase and merge.
+  // Supabase is the source of truth — data persists even if localStorage is cleared.
   useEffect(() => {
     supabase
       .from('eod_entries')
       .select('*')
       .order('created_at', { ascending: true })
       .then(({ data, error }) => {
-        if (!error && data?.length) {
+        if (!error && data) {
           setEmployeeEODs(prev => {
             const merged = mergeSupabaseIntoLocal(prev, data);
             saveToLocalStorage(merged);
@@ -137,14 +147,19 @@ export function EODProvider({ children }: { children: ReactNode }) {
       return next;
     });
 
-    // 2. Upsert to Supabase — onConflict prevents duplicate rows for same employee+day
-    supabase.from('eod_entries').upsert({
-      employee_name: employeeName, employee_email: employeeEmail,
-      date, login_time: loginTime, logout_time: logoutTime,
-      total_hours: totalHours, loom_link: loomLink ?? null, tasks,
-    }, { onConflict: 'employee_email,date' }).then(({ error }) => {
-      if (error) console.warn('Supabase EOD sync failed (data saved locally):', error.message);
-    });
+    // 2. Upsert to Supabase — permanent record, safe to re-submit same day
+    const { error } = await supabase.from('eod_entries').upsert({
+      employee_name:  employeeName,
+      employee_email: employeeEmail,
+      date,
+      login_time:     loginTime,
+      logout_time:    logoutTime,
+      total_hours:    totalHours,
+      loom_link:      loomLink ?? null,
+      tasks,
+    }, { onConflict: 'employee_email,date' });
+
+    if (error) console.warn('Supabase EOD sync failed (data saved locally):', error.message);
   };
 
   const clearAllData = () => {
