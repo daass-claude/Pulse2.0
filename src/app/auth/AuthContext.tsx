@@ -59,12 +59,34 @@ function getStoredUser(): User | null {
   } catch { return null; }
 }
 
+function getAutoLoginUser(): User | null {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('autologin');
+    if (!token) return null;
+    const t = token.trim().toLowerCase();
+    const match = USERS.find(u =>
+      u.name.toLowerCase() === t ||
+      u.email.toLowerCase() === t ||
+      u.username === token.trim()
+    );
+    if (!match) return null;
+    const { password: _pw, ...userRecord } = match;
+    saveSession(userRecord);
+    // Remove the param from the URL so it doesn't persist on refresh
+    const url = new URL(window.location.href);
+    url.searchParams.delete('autologin');
+    window.history.replaceState({}, '', url.toString());
+    return userRecord;
+  } catch { return null; }
+}
+
 function saveSession(userRecord: User) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...userRecord, _date: todayKey() }));
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(getStoredUser);
+  const [user, setUser] = useState<User | null>(() => getStoredUser() ?? getAutoLoginUser());
 
   const login = async (identifier: string, password: string): Promise<boolean> => {
     const id = identifier.trim().toLowerCase();
